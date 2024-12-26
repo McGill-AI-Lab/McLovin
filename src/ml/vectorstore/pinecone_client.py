@@ -1,7 +1,7 @@
 from pinecone import Pinecone, ServerlessSpec
-from dotenv import load_dotenv
+from typing import List, Dict, Optional
 import os
+from dataclasses import asdict
+from core.profile import UserProfile
 
-load_dotenv()
-
-pc = Pinecone(api_key=os.getenv('PINECONE_KEY'))
+#class PineconeClient:
