@@ -17,7 +17,7 @@ services:
   ml:
     build:
       context: .
-      dockerfile: docker/Dockerfile.ml
+      dockerfile: docker/Dockerfile.ai
     depends_on:
       - weaviate
     environment:
