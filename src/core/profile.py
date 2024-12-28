@@ -42,8 +42,10 @@ class UserProfile:
     grade: Grade
     ethnicity: List[Ethnicity]
     faculty: Faculty
-    major: List[str] # ex. ["computer science", "psychology"]
-    bio: str # embedding vector
+    major: List[str]
+    bio: str
+    preferences: str
+
 
 # Note: major and faculty might not be necessarily related (ex.SE - CS >> Civil Eng - SE)
 # might need to leverage LLM or any algorithm with Cosine Similarity
