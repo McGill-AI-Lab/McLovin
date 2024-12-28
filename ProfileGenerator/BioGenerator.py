@@ -217,7 +217,7 @@ def main():
                     combined_df = pd.concat([existing_df, df], ignore_index=True)
                     combined_df.drop_duplicates(inplace= True)
                     combined_df.to_csv(csv_file)
-f
+
                 except pandas.errors.ParserError:
                     print(f"Error parsing {csv_file}")
 
