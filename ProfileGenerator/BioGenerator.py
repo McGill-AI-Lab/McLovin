@@ -1,5 +1,4 @@
 from random import randint
-import google.generativeai as genai
 import random
 import json
 import JSON_manipulation as Jm
@@ -7,14 +6,18 @@ import pandas as pd
 import time
 import os
 
+import google.generativeai as genai
+#Api Holder
+import creds
+
 import pandas.errors
 
-LIM_DAY_API = 1000
+LIM_DAY_API = 1500
 LIM_MIN_API = 15
 
-hobbies_JSON = 'hobbies.json'
-phys_traits_JSON = 'phys_traits.json'
-pers_traits_JSON = 'pers_traits.json'
+hobbies_JSON = 'ProfileGenerator/json_prompts/hobbies.json'
+phys_traits_JSON = 'ProfileGenerator/json_prompts/phys_traits.json'
+pers_traits_JSON = 'ProfileGenerator/json_prompts/pers_traits.json'
 
 dict_data = {
     "gender": [],
@@ -41,13 +44,12 @@ majors = [
 ]
 
 
-with open("prompts.json") as file:
-    data = json.load(file)
+with open("ProfileGenerator/json_prompts/prompts.json") as file:
 
+    #Getting each prompt as an f string
+    data = json.load(file)
     instruction_prompts = [f'{prompt}' for prompt in data['prompts']]
     prompts_count = len(data['prompts'])
-
-
 
 
 def major_generator(lst):
@@ -169,7 +171,7 @@ def generate_bio(major, gender, GOI, hobby_prompt, phys_trait, pers_trait):
                                                  )
 
 
-    genai.configure(api_key="AIzaSyCWNdnWYArEuN234jk9oFu8-aDzXuKu5Sk")
+    genai.configure(api_key=creds.api)
     GenModel = genai.GenerativeModel("gemini-1.5-flash", system_instruction=formatted_instructions)
 
     print(f'Bio for {major} major')
@@ -236,7 +238,6 @@ def main():
             start_time = time.time()
 
         Jm.increment_count()
-
 
 
 main()
