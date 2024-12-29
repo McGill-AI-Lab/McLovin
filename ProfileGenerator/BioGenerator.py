@@ -8,7 +8,7 @@ import os
 
 import google.generativeai as genai
 #Api Holder
-import creds
+from dotenv import load_dotenv
 
 import pandas.errors
 
@@ -160,7 +160,7 @@ def pers_trait_generator(gender_interest):
 
 def generate_bio(major, gender, GOI, hobby_prompt, phys_trait, pers_trait):
 
-    #Generating the bios
+    #Formatting the instructions for the text generator
     instructions = f'{instruction_prompts[randint(0,prompts_count - 1)]}'
     formatted_instructions = instructions.format(gender=gender,
                                                  major=major,
@@ -170,10 +170,13 @@ def generate_bio(major, gender, GOI, hobby_prompt, phys_trait, pers_trait):
                                                  pers_trait=pers_trait
                                                  )
 
-
-    genai.configure(api_key=creds.api)
+    #Setting up the text generator
+    load_dotenv()
+    API = os.getenv("API_KEY")
+    genai.configure(api_key=API)
     GenModel = genai.GenerativeModel("gemini-1.5-flash", system_instruction=formatted_instructions)
 
+    #Generating bios
     print(f'Bio for {major} major')
     response = GenModel.generate_content("Write one bio",
                                         safety_settings = {
