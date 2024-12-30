@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 from transformers import AutoTokenizer, AutoModel
-from core.profile import UserProfile, Grade, Faculty, Ethnicity
+from src.core.profile import UserProfile, Grade, Faculty, Ethnicity
 from sentence_transformers import SentenceTransformer
 from pinecone import Pinecone, ServerlessSpec
 import os
@@ -16,7 +16,6 @@ class BioEmbedder:
         Initializes the BioEmbedder with SBERT model.
         '''
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        #self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.model = SentenceTransformer(model_name)
         self.index_name = 'matching-index'
         self.dimension = 384
@@ -90,11 +89,7 @@ class BioEmbedder:
             vectors=records, # update/insert (upsert) the new record
             namespace="bios-namespace"
         )
-        print("just upserted records:", records, "in index", index)
-
-        # debug
-        time.sleep(10)  # Wait for the upserted vectors to be indexed
-        print("index stats after 10 sec", index.describe_index_stats())
+        #print("just upserted records:", records, "in index", index)
 
         # return the embedded bio
         return bio_embedding

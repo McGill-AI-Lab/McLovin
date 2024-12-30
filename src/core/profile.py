@@ -46,9 +46,19 @@ class UserProfile:
     bio: str
     preferences: str
 
+    def tostring(self):
+        return (
+            f"user_id: {self.user_id}, "
+            f"name: {self.name}, "
+            f"age: {self.age}, "
+            f"grade: {self.grade.name}, "
+            f"ethnicity: {', '.join(e.name for e in self.ethnicity)}, "
+            f"faculty: {self.faculty.name}, "
+            f"major: {', '.join(self.major)}, "
+            f"bio: {self.bio}, "
+            f"preferences: {self.preferences}"
+        )
+
 
 # Note: major and faculty might not be necessarily related (ex.SE - CS >> Civil Eng - SE)
 # might need to leverage LLM or any algorithm with Cosine Similarity
-
-if __name__ == "__main__":
-    print(len(Faculty))
