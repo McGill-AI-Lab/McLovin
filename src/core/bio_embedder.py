@@ -74,7 +74,8 @@ class BioEmbedder:
             'faculty': profile.faculty.value,  # enum faculty
             'ethnicity': [str(e.value) for e in profile.ethnicity],  # list of enum ethnicities
             'major': profile.major,  # List of Strings
-            'bio': profile.bio
+            'bio': profile.bio,
+            'preferences': profile.preferences,
         }
         # record in index has form : record = {id, value, original text}
         record = {

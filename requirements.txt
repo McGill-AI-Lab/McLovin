@@ -1,0 +1,17 @@
+# Core libraries
+numpy
+torch
+transformers
+sentence-transformers
+
+# Pinecone
+pinecone-client
+
+# Environment variables
+python-dotenv
+
+# Web framework
+django
+
+# Test runner (if you want tests in your main requirements)
+pytest

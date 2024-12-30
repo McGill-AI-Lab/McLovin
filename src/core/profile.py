@@ -56,7 +56,7 @@ class UserProfile:
             f"faculty: {self.faculty.name}, "
             f"major: {', '.join(self.major)}, "
             f"bio: {self.bio}, "
-            f"preferences: {self.preferences}"
+            f"preferences: {self.preferences}",
         )
 
 
