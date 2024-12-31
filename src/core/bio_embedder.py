@@ -1,3 +1,4 @@
+from src.core import bio_embedder
 import torch
 import numpy as np
 from transformers import AutoTokenizer, AutoModel
@@ -20,16 +21,29 @@ class BioEmbedder:
         self.index_name = 'matching-index'
         self.dimension = 384
         self.metric = 'cosine'
-        self.namespace = 'bio-namespace'
+        #self.namespace = 'bio-namespace'
+        self.pc = Pinecone(api_key=os.getenv("PINECONE_KEY"))
 
-    def embed_bio(self, bio):
+        # if this is the first instance of the index, create it
+        if not self.pc.Index(self.index_name):
+            self.pc.create_index(
+                name=self.index_name,
+                dimension=self.dimension,
+                metric=self.metric,
+                spec=ServerlessSpec(
+                    cloud='aws',
+                    region='us-east-1'
+                )
+            )
+
+    def embed_text(self, text):
         """
         Create embedding for a single bio using BERT
 
         Output: vector embedding (1D np array)
         """
         # Prepare the input
-        embedding = self.model.encode(bio, convert_to_numpy=True)
+        embedding = self.model.encode(text, convert_to_numpy=True)
 
         return embedding  # Return as 1D array
 
@@ -40,57 +54,46 @@ class BioEmbedder:
         Input: profile with all metadata (UserProfile)
         Output: vector embedding of the bio (list)
         '''
+        # upsert the vectors, first define the index
+        index = self.pc.Index(self.index_name)
 
-        # numerical value for profile
-        bio_embedding = self.embed_bio(profile.bio)
-
-        # store the profile data in one vector embedding in pinecone
-        pc = Pinecone(api_key=os.getenv("PINECONE_KEY"))
-
-        # if this is the first instance of the index, create it
-        if not pc.has_index(self.index_name):
-            pc.create_index(
-                name=self.index_name,
-                dimension=self.dimension,
-                metric=self.metric,
-                spec=ServerlessSpec(
-                    cloud='aws',
-                    region='us-east-1'
-                )
-            )
+        # 2 numerical values per profile
+        bio_embedding = self.embed_text(profile.bio)
+        pref_embedding = self.embed_text(profile.preferences)
 
         # Wait for the index to be ready
-        while not pc.describe_index(self.index_name).status['ready']:
+        while not self.pc.describe_index(self.index_name).status['ready']:
             time.sleep(1)
 
-        # upsert the vectors, first define the index
-        index = pc.Index(self.index_name)
+        # order matters here
+        embeddings = [bio_embedding, pref_embedding]
+        types = ['bio', 'preferences']
 
-        # prepare the record to upsert
-        metadata = {
-            'type_of_vector': 'bio',
-            'age': profile.age,  # int
-            'grade': profile.grade.value,  # enum Grade
-            'faculty': profile.faculty.value,  # enum faculty
-            'ethnicity': [str(e.value) for e in profile.ethnicity],  # list of enum ethnicities
-            'major': profile.major,  # List of Strings
-            'bio': profile.bio,
-            'preferences': profile.preferences,
-        }
-        # record in index has form : record = {id, value, original text}
-        record = {
-            "id": profile.user_id,
-            "values": bio_embedding,
-            "metadata": metadata
-        }
-        records = [record]
+        for type_index, field in enumerate(embeddings):
+            #print("type of vector", types[type_index])
+            #print("field", field)
+            # prepare the record to upsert
+            metadata = {
+                'type_of_vector': types[type_index],
+                'age': profile.age,  # int
+                'grade': profile.grade.value,  # enum Grade
+                'faculty': profile.faculty.value,  # enum faculty
+                'ethnicity': [str(e.value) for e in profile.ethnicity],  # list of enum ethnicities
+                'major': profile.major,  # List of Strings
+                'bio': profile.bio,
+                'preferences': profile.preferences,
+            }
+            # record in index has form : record = {id, value, original text}
+            record = {
+                "id": profile.user_id + '_' + str(type_index),
+                "values": field,
+                "metadata": metadata
+            }
+            # upsert the record in pinecone
+            index.upsert(
+                vectors = [record],
+                namespace='profile-embeddings'
+            )
 
-        # upsert the record into index
-        index.upsert(
-            vectors=records, # update/insert (upsert) the new record
-            namespace="bios-namespace"
-        )
-        #print("just upserted records:", records, "in index", index)
-
-        # return the embedded bio
-        return bio_embedding
+        # return the embedded vectors
+        return embeddings
