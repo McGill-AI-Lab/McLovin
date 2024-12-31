@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse 
 from django.http import JsonResponse 
 from django.template import Template, Context
+from django.contrib.auth.decorators import login_required
 
 def credits(request):
     sample_dict = {
@@ -47,3 +48,8 @@ def base(request):
 def module(request):
     
     return render(request,"imported.html")
+
+@login_required
+def restricted_content(request):
+    
+    return "PAGE A CONTENU RESTRAIENT ACCEDE"

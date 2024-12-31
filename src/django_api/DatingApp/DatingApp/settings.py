@@ -77,10 +77,11 @@ WSGI_APPLICATION = 'DatingApp.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+           'ENGINE': 'djongo',
+           'NAME': 'user_management',
     }
 }
+
 
 
 # Password validation
@@ -123,3 +124,7 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CORS_ORIGIN_ALLOW_ALL = True # for mongodb to function properly 
+
+APPEND_SLASH = False
