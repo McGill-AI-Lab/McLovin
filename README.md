@@ -60,23 +60,30 @@ mcgill-dating-app/
 
 ## 💻 Development
 ```bash
-# Create and activate virtual environment
+# Create virtual environment
 python -m venv venv
+
+# Activate virtual environment
 source venv/bin/activate  # Linux/Mac
 venv\Scripts\activate     # Windows
 
 # Install dependencies
 pip install -r requirements.txt
 ```
-**Tests** (to be implemented):
+
+**Python Integration Tests**:
 ```bash
-python -m pytest
+python pytest tests
 ```
 
 ## 📊 ML Model Details
-- **k-means clustering** for initial grouping
-- **Vector embeddings** for bio analysis
-- **Faculty / Major weighting**
+- **Embed** user profile data via **SBERT** (PyTorch).
+- **Store** embeddings in **Pinecone** (+ optional sentiment score).
+- **Assign** each user to a cluster via **K-Means** (Pytorch).
+- **Rank** matches within that cluster using **cosine similarity**.
+- **Refine** final scores with metadata weighting
+
+*in the end, this creates a sort of **Matching Elo** for the users per cluster*
 
 ## 📱 API, Security, Contributing
 All to be implemented (authentication, endpoints, verification, etc.). PRs welcome!

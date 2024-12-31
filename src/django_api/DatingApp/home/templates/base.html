@@ -1,0 +1,13 @@
+<!-- This is a base (parent) HTML page that serves for inheritance-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% block title%} <title>Hello World</title> {% endblock%}
+</head>
+<body>
+    {% block content %}
+    {% endblock content %}
+</body>
+</html>
