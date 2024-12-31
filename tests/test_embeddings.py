@@ -1,11 +1,11 @@
-from src.core.bio_embedder import BioEmbedder
+from src.core.embedder import Embedder
 from src.core.profile import UserProfile, Faculty, Grade, Ethnicity
 
 def test_embeddings():
-    embedder = BioEmbedder()
+    embedder = Embedder()
 
     test_profile = UserProfile(
-        user_id="456",
+        user_id="455",
         name="davidkhanhlafond",
         age=25,
         grade=Grade.U3,

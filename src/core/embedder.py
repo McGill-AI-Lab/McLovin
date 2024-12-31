@@ -1,8 +1,4 @@
-from src.core import bio_embedder
 import torch
-import numpy as np
-from transformers import AutoTokenizer, AutoModel
-from src.core.profile import UserProfile, Grade, Faculty, Ethnicity
 from sentence_transformers import SentenceTransformer
 from pinecone import Pinecone, ServerlessSpec
 import os
@@ -11,7 +7,7 @@ from dotenv import load_dotenv
 
 load_dotenv(dotenv_path='.env')
 
-class BioEmbedder:
+class Embedder:
     def __init__(self, model_name='all-MiniLM-L6-v2'):
         '''
         Initializes the BioEmbedder with SBERT model.
@@ -21,7 +17,6 @@ class BioEmbedder:
         self.index_name = 'matching-index'
         self.dimension = 384
         self.metric = 'cosine'
-        #self.namespace = 'bio-namespace'
         self.pc = Pinecone(api_key=os.getenv("PINECONE_KEY"))
 
         # if this is the first instance of the index, create it
@@ -47,7 +42,7 @@ class BioEmbedder:
 
         return embedding  # Return as 1D array
 
-    def process_profile(self, profile: UserProfile):
+    def process_profile(self, profile):
         '''
         Processes profile into a pinecone record and adds it to the remote index (Pinecone Database).
 
@@ -70,8 +65,6 @@ class BioEmbedder:
         types = ['bio', 'preferences']
 
         for type_index, field in enumerate(embeddings):
-            #print("type of vector", types[type_index])
-            #print("field", field)
             # prepare the record to upsert
             metadata = {
                 'type_of_vector': types[type_index],
