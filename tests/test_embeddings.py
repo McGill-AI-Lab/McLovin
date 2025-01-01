@@ -13,7 +13,8 @@ def test_embeddings():
         faculty=Faculty.ARTS,
         major=["Design Engineering"],
         bio="I am a big dick wasian designer. I love gaming and watching k-dramas.",
-        preferences= 'Likes korean looking girls with big bumboclats'
+        preferences= 'Likes korean looking girls with big bumboclats',
+        cluster_id = 1
     )
     embedding = embedder.process_profile(test_profile) # this should save 2 records : one for bio and one for preferences
     assert len(embedding[0]) == 384 # for bio vector

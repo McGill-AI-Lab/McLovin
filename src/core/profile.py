@@ -45,6 +45,7 @@ class UserProfile:
     major: List[str]
     bio: str
     preferences: str
+    cluster_id: int
 
     def tostring(self):
         return (
@@ -56,7 +57,8 @@ class UserProfile:
             f"faculty: {self.faculty.name}, "
             f"major: {', '.join(self.major)}, "
             f"bio: {self.bio}, "
-            f"preferences: {self.preferences}",
+            f"preferences: {self.preferences},"
+            f"cluster_id: {self.cluster_id} "
         )
 
 
