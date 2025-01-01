@@ -1,4 +1,4 @@
-from django.db import models
+from djongo import models
 from pymongo import MongoClient
 from datetime import datetime
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
