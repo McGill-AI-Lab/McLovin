@@ -47,6 +47,21 @@ class UserProfile:
     preferences: str
     cluster_id: int
 
+    def __init__(self, user_id, name, age, grade, ethnicity, faculty, major, bio, preferences=''):
+        # all these fields must be instantiated
+        self.user_id = user_id
+        self.name = name
+        self.age = age
+        self.grade = grade
+        self.ethnicity = ethnicity
+        self.faculty = faculty
+        self.major = major
+        self.bio = bio
+        self.preferences = preferences
+
+        # except for cluster
+        self.cluster_id = -1 # cluster is initialized as None before clustering
+
     def tostring(self):
         return (
             f"user_id: {self.user_id}, "

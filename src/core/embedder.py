@@ -34,6 +34,7 @@ class Embedder:
     def embed_text(self, text):
         """
         Create embedding for a single bio using BERT
+        This is a helper for process_profile below.
 
         Output: vector embedding (1D np array)
         """
@@ -60,33 +61,46 @@ class Embedder:
         while not self.pc.describe_index(self.index_name).status['ready']:
             time.sleep(1)
 
-        # order matters here
-        embeddings = [bio_embedding, pref_embedding]
-        types = ['bio', 'preferences']
+        # we want to upsert into pinecone 2 different records: bio and pref
+        # make a general metadata info (only the type is different) for both records
+        common_metadata = {
+            'age': profile.age,  # int
+            'grade': profile.grade.value,  # enum Grade
+            'faculty': profile.faculty.value,  # enum faculty
+            'ethnicity': [str(e.value) for e in profile.ethnicity],  # list of enum ethnicities
+            'major': profile.major,  # List of Strings
+            'bio': profile.bio,
+            'preferences': profile.preferences,
+            'cluster_': profile.cluster_id,
+        }
 
-        for type_index, field in enumerate(embeddings):
-            # prepare the record to upsert
-            metadata = {
-                'type_of_vector': types[type_index],
-                'age': profile.age,  # int
-                'grade': profile.grade.value,  # enum Grade
-                'faculty': profile.faculty.value,  # enum faculty
-                'ethnicity': [str(e.value) for e in profile.ethnicity],  # list of enum ethnicities
-                'major': profile.major,  # List of Strings
-                'bio': profile.bio,
-                'preferences': profile.preferences,
+        bio_record = {
+            "id": profile.user_id,
+            "values": bio_embedding,
+            "metadata": {
+                 **common_metadata,
+                 'type_of_vector': 'bio'
             }
-            # record in index has form : record = {id, value, original text}
-            record = {
-                "id": profile.user_id + '_' + str(type_index),
-                "values": field,
-                "metadata": metadata
+        }
+
+        pref_record = {
+            "id": profile.user_id,
+            "values": pref_embedding,
+            "metadata": {
+                 **common_metadata,
+                 'type_of_vector': 'preferences'
             }
-            # upsert the record in pinecone
-            index.upsert(
-                vectors = [record],
-                namespace='profile-embeddings'
-            )
+        }
+
+        # upsert the records in their respective namespaces
+        index.upsert(
+            vectors = [bio_record],
+            namespace='bio-embeddings'
+        )
+        index.upsert(
+            vectors = [pref_record],
+            namespace='preferences-embeddings'
+        )
 
         # return the embedded vectors
-        return embeddings
+        return [bio_embedding, pref_embedding]

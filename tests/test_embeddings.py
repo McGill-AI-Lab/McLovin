@@ -5,7 +5,7 @@ def test_embeddings():
     embedder = Embedder()
 
     test_profile = UserProfile(
-        user_id="455",
+        user_id="300",
         name="davidkhanhlafond",
         age=25,
         grade=Grade.U3,
@@ -14,7 +14,6 @@ def test_embeddings():
         major=["Design Engineering"],
         bio="I am a big dick wasian designer. I love gaming and watching k-dramas.",
         preferences= 'Likes korean looking girls with big bumboclats',
-        cluster_id = 1
     )
     embedding = embedder.process_profile(test_profile) # this should save 2 records : one for bio and one for preferences
     assert len(embedding[0]) == 384 # for bio vector
