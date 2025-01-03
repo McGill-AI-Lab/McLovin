@@ -2,7 +2,8 @@ from django.shortcuts import render
 from django.http import HttpResponse 
 from django.http import JsonResponse 
 from django.template import Template, Context
-from django.contrib.auth.decorators import login_required
+#from django.contrib.auth.decorators import login_required
+from .models import login_required
 
 def credits(request):
     sample_dict = {
@@ -50,6 +51,19 @@ def module(request):
     return render(request,"imported.html")
 
 @login_required
-def restricted_content(request):
-    
-    return "PAGE A CONTENU RESTRAIENT ACCEDE"
+def dashboard(request):
+    return render(request,"dashboard.html")
+
+def home(request):
+    # check if user is logged in, and add it to the context variables
+
+    # retrieve the user instance of the logged in user to display name etc..
+    loggedIn = False;
+    if "user_id" in request.session.keys():
+        loggedIn = True;
+    context = {
+        "loggedIn" : loggedIn,
+        "options" : request.session.keys(),
+    }
+
+    return render(request,"home.html",context)

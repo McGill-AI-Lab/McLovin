@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path
 
 from home import views as home_views # since every app has a views they should be distinclty named
-from databaseInteraction import views as login_views 
+from userManagement import views as login_views 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -26,8 +26,10 @@ urlpatterns = [
     path('child/', home_views.child,name ="child"),
     path('base/', home_views.base,name ="base"),
     path('import/', home_views.module,name ="imported"),
-    path("login/",login_views.login_view),
-    path("logout/",login_views.logout_view),
-    path("signup/",login_views.signup_view),
+    path("login/",login_views.login_user,name="login"),
+    path("logout/",login_views.logout_user,name="logout"),
+    path("signup/",login_views.signup_user,name="signup"),
+    path("dashboard/",home_views.dashboard,name="dashboard"),
+    path('home/', home_views.home,name="home"),
 ]
 

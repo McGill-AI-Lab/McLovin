@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'home', # added custom App to the list 
-    'databaseInteraction',
+    'userManagement',
 ]
 
 MIDDLEWARE = [
@@ -76,9 +76,9 @@ WSGI_APPLICATION = 'DatingApp.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-           'ENGINE': 'djongo',
-           'NAME': 'user_management',
+    "default": {
+       "ENGINE" : "django.db.backends.sqlite3",
+       "NAME":  BASE_DIR / 'db.sqlite3',
     }
 }
 
