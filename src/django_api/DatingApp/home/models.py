@@ -15,6 +15,6 @@ def login_required(view_func):
             #return JsonResponse({"error": "Authentication required"}, status=401)
             # redrect to login and put the next as the current endpoint
             #TODO redirect to login and add ?next=<origin endpoint>
-            return redirect(request,"login")#JsonResponse({"error":"please authenticate"}, status=401)
+            return redirect("login")#JsonResponse({"error":"please authenticate"}, status=401)
         return view_func(request, *args, **kwargs)
     return wrapper

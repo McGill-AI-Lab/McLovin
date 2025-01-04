@@ -13,48 +13,15 @@ import bcrypt
 from django.shortcuts import redirect
 import json
 
-# MongoDB connection
-MONGO_DB_NAME = "user_management"
-MONGO_URI = "localhost" #  add the deployment mongodb uri here
-mongo_client = MongoClient(MONGO_URI)
-mongo_db = mongo_client[MONGO_DB_NAME]
+from dotenv import dotenv_values, find_dotenv,load_dotenv
 
-"""
-@api_view(['GET', 'POST'])
-@csrf_exempt
-def login_view(request):
-    if request.method == 'GET':
-        return render(request,"login.html")
-    elif request.method == 'POST':
-        email = request.data.get('email')
-        password = request.data.get('password')
-        user = authenticate(request, email=email, password=password)
-        if user is not None:
-            login(request, user)
-            serializer = UserSerializer(user)
-            return Response(serializer.data)
-        else:
-            return Response({'error': 'Invalid email or password'}, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET', 'POST'])
-@csrf_exempt
-def logout_view(request):
-    logout(request)
-    return Response({'success': 'Logged out successfully'})
+config_path = find_dotenv("config.env")
+config = dotenv_values(dotenv_path=config_path) # returns a dictionnary of dotenv values
 
-@api_view(['GET', 'POST'])
-@csrf_exempt
-def signup_view(request):
-    if request.method == 'GET':
-        return render(request,"signup.html")
-    elif request.method == 'POST':
-        serializer = UserSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_405_BAD_REQUEST)
-"""
+mongo_client = MongoClient(config["MONGO_URI"])
+mongo_db = mongo_client[config["MONGO_DB_NAME"]]
+
 @api_view(['GET', 'POST'])
 @csrf_exempt
 def login_user(request):
@@ -79,7 +46,8 @@ def login_user(request):
 def logout_user(request):
     if request.method == "GET":
         request.session.flush()  # Clear session data
-        return JsonResponse({"message": "Logged out successfully"})
+        #return JsonResponse({"message": "Logged out successfully"})
+        return redirect("login")
 
 @api_view(['GET', 'POST'])
 @csrf_exempt

@@ -1,43 +1,55 @@
-<!-- This is a base (parent) HTML page that serves for inheritance-->
+<!-- Improved Base HTML Template -->
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
-<style>
-    nav {
-        display: flex;
-        background-color:#ff6f61;
-
-    }
-
-    .navbar-brand{
-        padding-left: 10px;
-        font-size: 20px;
-        background: #005ea8;
-    }
-</style>
 <head>
+    <!-- Meta Information -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    {% block title%} <title>Hello World</title> {% endblock%}
+    <link rel="stylesheet" href="{% static 'DatingApp/css/base.css' %}">
+    <!-- Dynamic Page Title -->
+    {% block title %}
+    <title>McGill Dating App</title>
+    {% endblock %}
+
+    <!-- Additional Page-Specific CSS -->
+    {% block extra_style %}{% endblock %}
 </head>
 <body>
-{% block content %}
-<div>
-{% block nav %}
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <a class="navbar-brand" href="{% url 'home' %}">DatingApp</a>
-    {% if loggedIn %}
-    <a class="navbar-brand" href="{% url 'logout' %}">LogOut</a>
-    {% else %}
-    <a class="navbar-brand" href="{% url 'signup' %}">Login / Signup</a>
-    {% endif %}
+
+<header>
+    McGill Dating App - Find Your Connection
+</header>
+
+<!-- Navbar -->
+<nav>
+    <div>
+        <a class="navbar-brand" href="{% url 'home' %}">DatingApp</a>
+    </div>
+    <div class="navbar-options">
+        {% if loggedIn %}
+        <a class="navbar-brand" href="{% url 'dashboard' %}">Dashboard</a>
+        <a class="navbar-brand" href="{% url 'logout' %}">LogOut</a>
+        {% else %}
+        <a class="navbar-brand" href="{% url 'signup' %}">Login / Signup</a>
+        {% endif %}
+    </div>
 </nav>
-{% endblock %}
-<!--
-<body>
-    <h3>MAIN PAGE HERE </h3>
-</body>
--->
-    {% endblock  %}
-</div>
+
+<!-- Content Block -->
+<main>
+    {% block content %}
+    <!-- Main content will load here -->
+    {% endblock %}
+</main>
+
+<!-- Footer -->
+
+<footer>
+    &copy; 2024 McGill Dating App. All Rights Reserved. |
+    <a href="{% url 'privacy_policy' %}">Privacy Policy</a> |
+    <a href="{% url 'terms_of_service' %}">Terms of Service</a>
+</footer>
+
 </body>
 </html>

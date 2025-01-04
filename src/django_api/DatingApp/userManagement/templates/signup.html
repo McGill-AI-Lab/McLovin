@@ -1,248 +1,102 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Signup Page</title>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const signupForm = document.getElementById("signupForm");
+{% extends "base.html" %}
 
-            signupForm.addEventListener("submit", async function (event) {
-                event.preventDefault();
+{% block title %}
+<title>Signup Page</title>
+{% endblock %}
 
-                //const email = document.getElementById("email").value;
-                const email = document.getElementById("email").value;
-                const password1 = document.getElementById("password1").value;
-                const password2 = document.getElementById("password2").value;
-                const firstName = document.getElementById("firstName").value;
-                const lastName = document.getElementById("lastName").value;
-
-                if (password1 !== password2) {
-                    console.error('Passwords do not match');
-                    alert('Passwords do not match'); // Optional: show an alert to the user
-                    return;
-                }
-
-                try {
-                    const response = await fetch('/signup/', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            //email,
-                            email:email,
-                            password: password1,
-                            firstName: firstName,
-                            lastName: lastName,
-                        }),
-                    });
-
-                    if (response.ok) {
-                        const data = await response.json();
-                        console.log(data); // Handle success (e.g., redirect or show a message)
-                        fadeOut();
-                        //window.location.href = "{% url 'login' %}"; // redirect to login
-                    } else {
-                        const error = await response.json();
-                        console.error(error); // Handle errors
-                        alert('Signup failed: ' + error.error); // Optional error message
-                    }
-                } catch (err) {
-                    console.error('Network error:', err);
-                    alert('A network error occurred. Please try again.');
-                }
-            });
-        });
-
-        function fadeOut() {
-            const signupForm = document.getElementById("signupWrapper");
-
-            // Trigger fade-out and translate effect
-                signupForm.style.transition = "opacity 2s ease, transform 2s ease";
-                signupForm.style.opacity = "0";
-                signupForm.style.transform = "translateY(-1000px)";
-
-                // Optional: perform an action after the animation completes
-                setTimeout(() => {
-                    signupForm.style.display = "none";
-                }, 2000); // Match the duration of the transition
-
-                setTimeout(() => {
-                    window.location.href = {% url 'login' %}
-            }, 2100); // Match the duration of the transition
-
-        }
-    </script>
-    <style>
-        /* General Styles */
-        body {
-            margin: 0;
-            height: 100vh;
-            display: block;
-            align-items: center;
-            justify-content: center;
-            font-family: Arial, sans-serif;
-            background: #f4f4f9; /* Light gray for epure look */
-        }
-
-        .container {
-            display:flex;
-            margin-top: 10vh;
-        }
-
-        #signupWrapper {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-        }
-
-        /* Centered Box Styling */
-        #signupForm {
-            background: #fff; /* White background for clean design */
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
-            text-align: center;
-            opacity: 0; /* Initially invisible */
-            transform: translateY(-20px); /* Slide in from top */
-            animation: fadeInSlideDown 1s ease-out forwards; /* Animation */
-        }
-
-        /* Input and Button Styling */
-        label {
-            display: block;
-            margin: 1rem 0;
-            font-size: 1rem;
-            color: #333; /* Dark gray for text */
-        }
-
-        input[type="text"], input[type="password"] {
-            width: 100%;
-            padding: 0.5rem;
-            margin-top: 0.5rem;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 1rem;
-            outline: none;
-            transition: border-color 0.2s ease;
-        }
-
-        input[type="text"]:focus, input[type="password"]:focus {
-            border-color: #0078d4; /* Blue highlight on focus */
-        }
-
-        button {
-            padding: 0.7rem 2rem;
-            background: #0078d4; /* Soft blue for buttons */
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-        }
-
-        button:hover {
-            background: #005ea8; /* Darker blue on hover */
-        }
-
-        /* Animation Keyframes */
-        @keyframes fadeInSlideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-        }
-
-        .my-button {
-            background: #fff;
-            border: 1px solid #ababab;
-            color: #696969;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            padding: 10px 15px;
-        }
-        .notify {
-            background: #323232;
-            border-radius: 3px;
-            -webkit-box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 3px 1px -2px rgba(0,0,0,0.12), 0 1px 5px 0 rgba(0,0,0,0.2);
-            -moz-box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 3px 1px -2px rgba(0,0,0,0.12), 0 1px 5px 0 rgba(0,0,0,0.2);
-            box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 3px 1px -2px rgba(0,0,0,0.12), 0 1px 5px 0 rgba(0,0,0,0.2);
-            color: #fff;
-            display: block;
-            font-size: 14px;
-            padding: 0.8rem 1.4rem;
-            position: absolute;
-            top: 0;
-            right: 0%;
-            width:30%;
-            transition: all 0.1s ease-in-out;
-            transform-origin: top center;
-            transform: scaleY(1);
-            z-index: 3;
-        }
-        .notify.-hidden {
-            opacity: 0;
-            transform: scaleY(0);
-        }
-
-    </style>
-</head>
-<body>
-{% include "base.html" %}
+{% block content %}
 {% block signupWindow %}
-    <div class="container">
-        <div id="signupWrapper">
-    <form id="signupForm">
-        <!-- 
-        <label>
-            Email:
-            <input type="email" id="email" name="email" required>
-        </label>
-        <br />
-        -->
-        <label>
-            Email Adress:
-            <input type="email" id="email" name="email" required>
-        </label>
-        <br/>
-        <label>
-            Password:
-            <input type="password" id="password1" name="password1" required>
-        </label>
-        <br/>
-        <label>
-            Confirm Password:
-            <input type="password" id="password2" name="password2" required>
-        </label>
-        <br />
-        <label>
-            First Name:
-            <input type="text" id="firstName" name="firstName" required>
-        </label>
-        <br />
-        <label>
-            Last Name:
-            <input type="text" id="lastName" name="lastName" required>
-        </label>
-        <br />
-        <button type="submit">Sign Up</button>
-    </form>
+
+{%load static%}
+<head>
+    <link rel="stylesheet" href="{% static 'DatingApp/css/signup.css' %}">
+</head>
+
+<div class="container">
+    <div id="signupWrapper">
+        <!-- Signup Form -->
+        <form id="signupForm">
+            <label for="email">
+                Email Address:
+                <input type="email" id="email" name="email" required>
+            </label>
+            <label for="password1">
+                Password:
+                <input type="password" id="password1" name="password1" required>
+            </label>
+            <label for="password2">
+                Confirm Password:
+                <input type="password" id="password2" name="password2" required onpaste="return false">
+            </label>
+            <label for="firstName">
+                First Name:
+                <input type="text" id="firstName" name="firstName" required>
+            </label>
+            <label for="lastName">
+                Last Name:
+                <input type="text" id="lastName" name="lastName" required>
+            </label>
+            <button type="submit">Sign Up</button>
+        </form>
+
+        <!-- Redirect to Login -->
+        <div class="signin-redirect">
+            Already have an account? Head to sign in <a href="{% url 'login' %}">here</a>.
         </div>
     </div>
-<div>Already have an account ? Head to sign in <a href="{% url 'login' %}">here</a></div>
+</div>
 {% endblock %}
-</body>
-</html>
+
+
+<script>
+    // Prevent Copy-Paste for Password Confirmation
+    document.addEventListener("DOMContentLoaded", function () {
+        const password2 = document.getElementById("password2");
+        password2.onpaste = function (e) {
+            e.preventDefault();
+            alert("Pasting into the confirmation password field is not allowed.");
+        };
+    });
+
+    // Handle Form Submission
+    const signupForm = document.getElementById("signupForm");
+    signupForm.addEventListener("submit", async function (event) {
+        event.preventDefault();
+        const email = document.getElementById("email").value;
+        const password1 = document.getElementById("password1").value;
+        const password2 = document.getElementById("password2").value;
+        const firstName = document.getElementById("firstName").value;
+        const lastName = document.getElementById("lastName").value;
+
+        if (password1 !== password2) {
+            alert("Passwords do not match!");
+            return;
+        }
+
+        try {
+            const response = await fetch("/signup/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email: email,
+                    password: password1,
+                    firstName: firstName,
+                    lastName: lastName,
+                }),
+            });
+
+            if (response.ok) {
+                alert("Signup successful! Redirecting to login...");
+                window.location.href = "{% url 'login' %}";
+            } else {
+                const error = await response.json();
+                alert("Signup failed: " + error.error);
+            }
+        } catch (err) {
+            console.error("Network error:", err);
+        }
+    });
+</script>
+{% endblock content %}

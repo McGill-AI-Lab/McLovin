@@ -1,0 +1,81 @@
+/* General Styles */
+body {
+    margin: 0;
+    padding: 0;
+    background: #f4f4f9;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    min-height: 90vh; /* Prevent overlap with footer */
+    margin-top: 10vh;
+}
+
+#signupWrapper {
+    background: #ffffff;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    width: 400px;
+    text-align: center;
+}
+
+label {
+    display: block;
+    margin-top: 1rem;
+    font-size: 1rem;
+    color: #333;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: 0.5rem;
+    margin-top: 0.3rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus {
+    border-color: #0078D4;
+    outline: none;
+}
+
+button {
+    margin-top: 1.5rem;
+    padding: 0.7rem 2rem;
+    background: #0078D4;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+button:hover {
+    background: #005ea8;
+}
+
+.signin-redirect {
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.signin-redirect a {
+    color: #0078D4;
+    text-decoration: none;
+}
+
+.signin-redirect a:hover {
+    text-decoration: underline;
+}
