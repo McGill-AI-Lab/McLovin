@@ -14,7 +14,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 sys.path.append('../../') # assuming working dir is DatingApp (with manage.py), this adds the core directory to PATH
 
-from core.profile import UserProfile
+#from core.profile import UserProfile
 
 # defining a decorator to check if an user is authenticated
 from functools import wraps
@@ -47,7 +47,7 @@ users_collection = db["users"]
 #"mongodb://localhost:27017/"
 
 # this app was specifically made to test the database interactions of Django with the mongodb DB
-class User(UserProfile):
+class User:
     """A custom User class for MongoDB interaction using pymongo."""
 
     def __init__(self, db_uri="your_db_uri", db_name="your_db_name", collection_name="users"):
@@ -154,3 +154,37 @@ class UserProfileDD(AbstractBaseUser):
     def __str__(self):
         return self.email
 """
+# models.py
+from django.db import models
+
+class Grade(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+
+class Ethnicity(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+
+class Faculty(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+
+class UserProfile(models.Model):
+    user_id = models.CharField(max_length=255)
+    name = models.CharField(max_length=255)
+    age = models.IntegerField()
+    grade = models.ForeignKey(Grade, on_delete=models.CASCADE)
+    ethnicity = models.ManyToManyField(Ethnicity)
+    faculty = models.ForeignKey(Faculty, on_delete=models.CASCADE)
+    major = models.JSONField()  # List of strings
+    bio = models.TextField()
+    preferences = models.TextField()

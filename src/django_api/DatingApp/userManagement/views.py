@@ -14,12 +14,18 @@ import bcrypt
 
 from dotenv import dotenv_values, find_dotenv,load_dotenv
 
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from .models import UserProfile
+from .forms import UserProfileForm
+from bson import ObjectId
 
 config_path = find_dotenv("config.env")
 config = dotenv_values(dotenv_path=config_path) # returns a dictionnary of dotenv values
 
 mongo_client = MongoClient(config["MONGO_URI"])
 mongo_db = mongo_client[config["MONGO_DB_NAME"]]
+users_collection = mongo_db["users"]
 
 @api_view(['GET', 'POST'])
 @csrf_exempt
@@ -38,7 +44,7 @@ def login_user(request):
         request.session["user_id"] = str(user["_id"])  # Use str to serialize MongoDB ObjectId
 
         # Retrieve the `next` parameter to determine where to redirect after login
-        next_url = request.GET.get("next", "/")  # Default to home if `next` is not provided
+        next_url = request.GET.get("next", "%2Fhome%2F")  # Default to home if `next` is not provided
 
         # Redirect to the specified URL or return a success response
         return JsonResponse({"message": "Login successful", "redirect": next_url})
@@ -87,6 +93,13 @@ def signup_user(request):
                 "username": firstName+" "+lastName,
                 "email": email,
                 "password": hashed_password.decode(),  # Store the hashed password as a string
+                'age': 0,
+                'grade': 0,
+                'ethnicity': "Dunno",
+                'faculty': "Dunno",
+                'major': "Hmm",
+                'bio': "This is my bio !",
+                'preferences': "None",
             }
             result = mongo_db.users.insert_one(user)
 
@@ -103,4 +116,43 @@ def signup_user(request):
 @csrf_exempt
 def restricted_view(request):
     return render(request,"restricted.html")
-    
+
+@login_required
+def user_dashboard(request, user_id):
+    # Retrieve user profile
+    #user_profile = get_object_or_404(UserProfile, user_id=user_id)
+    user_profile = users_collection.find_one({"_id": ObjectId(user_id)})
+
+    if not user_profile:
+        messages.error(request, 'User profile not found.')
+        return redirect('home')
+
+    if request.method == 'POST':
+        if 'edit' in request.POST:
+            # Update the fields provided by the POST request
+            updated_data = {
+                'username': request.POST.get('name', user_profile.get('name', '')),
+                'age': int(request.POST.get('age', user_profile.get('age', 0))),
+                'grade': request.POST.get('grade', user_profile.get('grade', '')),
+                'ethnicity': request.POST.getlist('ethnicity') or user_profile.get('ethnicity', []),
+                'faculty': request.POST.get('faculty', user_profile.get('faculty', '')),
+                'major': request.POST.getlist('major') or user_profile.get('major', []),
+                'bio': request.POST.get('bio', user_profile.get('bio', '')),
+                'preferences': request.POST.get('preferences', user_profile.get('preferences', '')),
+            }
+
+            # Update the user profile in MongoDB
+            mongo_db.users.update_one({'_id': ObjectId(user_id)}, {'$set': updated_data})
+            messages.success(request, 'Profile updated successfully!')
+            return redirect('user_dashboard', user_id=user_id)
+
+        elif 'delete' in request.POST:
+            # Delete the user profile from MongoDB
+            mongo_db.users.delete_one({'_id': ObjectId(user_id)})
+            messages.success(request, 'Profile deleted successfully!')
+            return redirect('logout')
+
+    context = {
+        'user_profile': user_profile,
+    }
+    return render(request, 'dashboard.html', context)

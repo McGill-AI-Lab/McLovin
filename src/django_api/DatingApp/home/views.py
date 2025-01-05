@@ -51,10 +51,6 @@ def module(request):
     
     return render(request,"imported.html")
 
-@login_required
-def dashboard(request):
-    return render(request,"dashboard.html")
-
 def home(request):
     # check if user is logged in, and add it to the context variables
 

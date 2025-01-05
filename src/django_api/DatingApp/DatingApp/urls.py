@@ -29,9 +29,10 @@ urlpatterns = [
     path("login/",login_views.login_user,name="login"),
     path("logout/",login_views.logout_user,name="logout"),
     path("signup/",login_views.signup_user,name="signup"),
-    path("dashboard/",home_views.dashboard,name="dashboard"),
+    path('dashboard/<str:user_id>/', login_views.user_dashboard, name='user_dashboard'),
     path("privacy_policy/",home_views.privacy_policy,name="privacy_policy"),
     path("terms_of_service/",home_views.terms_of_service,name="terms_of_service"),
     path('home/', home_views.home,name="home"),
+    path('', home_views.home,name="home2"),
 ]
 
