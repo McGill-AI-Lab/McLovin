@@ -1,11 +1,7 @@
 
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework import status
-from .models import User
-from .serializers import UserSerializer
-from .models import login_required
+from .user import login_required
 from pymongo import MongoClient
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
@@ -16,8 +12,6 @@ from dotenv import dotenv_values, find_dotenv,load_dotenv
 
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
-from .models import UserProfile
-from .forms import UserProfileForm
 from bson import ObjectId
 
 config_path = find_dotenv("config.env")

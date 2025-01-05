@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from django.template import Template, Context
 #from django.contrib.auth.decorators import login_required
 import sys
-from userManagement.models import login_required
+from userManagement.user import login_required
 
 def credits(request):
     sample_dict = {

@@ -2,7 +2,7 @@
 from django import forms
 from .models import UserProfile
 
-
+#TODO Make the dictionnary dynamically based on the User class
 class UserProfileForm(forms.ModelForm):
     class Meta:
         model = UserProfile
