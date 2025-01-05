@@ -1,6 +1,4 @@
-from django.shortcuts import render
-from django.contrib.auth import authenticate, login, logout
-from django.http import JsonResponse
+
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -9,9 +7,10 @@ from .models import User
 from .serializers import UserSerializer
 from .models import login_required
 from pymongo import MongoClient
-import bcrypt
-from django.shortcuts import redirect
+from django.http import JsonResponse
+from django.shortcuts import render, redirect
 import json
+import bcrypt
 
 from dotenv import dotenv_values, find_dotenv,load_dotenv
 
@@ -26,19 +25,29 @@ mongo_db = mongo_client[config["MONGO_DB_NAME"]]
 @csrf_exempt
 def login_user(request):
     if request.method == "POST":
-        data  = json.loads(request.body)
+        data = json.loads(request.body)
         email = data.get("email")
         password = data.get("password")
 
+        # Fetch user from MongoDB
         user = mongo_db.users.find_one({"email": email})
         if not user or not bcrypt.checkpw(password.encode(), user["password"].encode()):
             return JsonResponse({"error": "Invalid email or password"}, status=401)
 
         # Store user_id in session to persist authentication
         request.session["user_id"] = str(user["_id"])  # Use str to serialize MongoDB ObjectId
-        return JsonResponse({"message": "Login successful"})
+
+        # Retrieve the `next` parameter to determine where to redirect after login
+        next_url = request.GET.get("next", "/")  # Default to home if `next` is not provided
+
+        # Redirect to the specified URL or return a success response
+        return JsonResponse({"message": "Login successful", "redirect": next_url})
+
     elif request.method == "GET":
-        return render(request,"login.html")
+        # Pass the `next` parameter to the template for inclusion in the form
+        next_url = request.GET.get("next", "/")
+        return render(request, "login.html", {"next": next_url})
+
 
 @api_view(['GET', 'POST'])
 @login_required

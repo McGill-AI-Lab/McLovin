@@ -3,44 +3,126 @@ from pymongo import MongoClient
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from functools import wraps
 from django.http import JsonResponse
+from django.shortcuts import redirect
+import sys
+from pymongo import MongoClient
+from bson.objectid import ObjectId
+from datetime import datetime
+from django.utils.crypto import get_random_string
+from django.core.mail import send_mail
+from werkzeug.security import generate_password_hash, check_password_hash
+
+sys.path.append('../../') # assuming working dir is DatingApp (with manage.py), this adds the core directory to PATH
+
+from core.profile import UserProfile
 
 # defining a decorator to check if an user is authenticated
+from functools import wraps
+from urllib.parse import urlencode
+from django.shortcuts import redirect
 
 def login_required(view_func):
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
         # Check if the user is authenticated
-        if not request.session.get("user_id"):  
-            return JsonResponse({"error": "Authentication required"}, status=401)
+        if not request.session.get("user_id"):
+            # Capture the origin URL (current path and query string)
+            origin = request.get_full_path()
+
+            # Add the `next` parameter with the origin URL
+            query_params = urlencode({"next": origin})
+            login_url = f"/login/?{query_params}"
+
+            # Redirect to the login URL with the `next` parameter
+            return redirect(login_url)
+
         return view_func(request, *args, **kwargs)
     return wrapper
+
 
 # Connect to MongoDB
 client = MongoClient("mongodb://localhost:27017")
 db = client["user_management"]
 users_collection = db["users"]
+#"mongodb://localhost:27017/"
 
 # this app was specifically made to test the database interactions of Django with the mongodb DB
-class User(models.Model):
+class User(UserProfile):
+    """A custom User class for MongoDB interaction using pymongo."""
 
-    # because the default __str__ method called when you print an instance of User is not user friendly (you would get <User: User object (1)> for ex), override it to print relevant information
+    def __init__(self, db_uri="your_db_uri", db_name="your_db_name", collection_name="users"):
+        self.client = MongoClient(db_uri)  # Replace with your MongoDB URI
+        self.db = self.client[db_name]
+        self.collection = self.db[collection_name]
+
+    def create_user(self, email, password, first_name="", last_name="", birth_date=None):
+        """Creates a new user in the database."""
+        if not email or not password:
+            raise ValueError("Email and password are required")
+
+        hashed_password = generate_password_hash(password)
+        user_data = {
+            "email": email,
+            "password": hashed_password,
+            "first_name": first_name,
+            "last_name": last_name,
+            "birth_date": birth_date or datetime(2000, 1, 1).isoformat(),
+            "is_active": True,
+            "created_at": datetime.utcnow(),
+            "cluster_id": -1,
+        }
+
+        result = self.collection.insert_one(user_data)
+        return str(result.inserted_id)
+
+    def get_user_by_id(self, user_id):
+        """Fetches a user by their ID."""
+        return self.collection.find_one({"_id": ObjectId(user_id)})
+
+    def authenticate_user(self, email, password):
+        """Authenticates a user with email and password."""
+        user = self.collection.find_one({"email": email})
+        if user and check_password_hash(user["password"], password):
+            return user
+        return None
+
+    def reset_password(self, email):
+        """Generates a password reset token and sends a reset email."""
+        user = self.collection.find_one({"email": email})
+        if not user:
+            raise ValueError("User not found")
+
+        token = get_random_string(length=32)
+        reset_link = f"http://yourdomain.com/reset-password/{token}/"
+        send_mail(
+            "Password Reset Request",
+            f"Click the link to reset your password: {reset_link}",
+            "no-reply@yourdomain.com",
+            [email],
+        )
+
+        # Store the token with an expiration time in the database
+        self.collection.update_one(
+            {"_id": user["_id"]},
+            {"$set": {"reset_token": token, "reset_token_expires": datetime.utcnow()}}
+        )
+        return token
+
+    def update_user(self, user_id, updates):
+        """Updates user details.
+        Input : a user_id (unique to every user) and a dictionary of updates (python-like)
+        Output : result of the update
+        """
+        return self.collection.update_one({"_id": ObjectId(user_id)}, {"$set": updates})
+
+    def delete_user(self, user_id):
+        """Deletes a user from the database."""
+        return self.collection.delete_one({"_id": ObjectId(user_id)})
+
     def __str__(self):
-        return f"user : id = {self.id}"
-
-    def __init__(self):
-        self.is_authenticated = False
-        first_name = models.CharField(max_length=50)
-        last_name = models.CharField(max_length=50)
-        birth = models.DateField(default='2000-01-01')
-        email = models.EmailField(max_length=254,default='default@example.com')
-        password = models.CharField(max_length=50,default="password")
-
-    def reset_password(self):
-        pass
-        # reset password using emails ?
-        # ask for the catch phrase or like a question, or else are we using an email address so that we can send a link to reset ?
-
-
+        return f"MongoDB User Collection: {self.collection.name}"
+#TODO Implement the UserManager for login and signup views
+"""
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
@@ -56,7 +138,7 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault('is_superuser', True)
         return self.create_user(email, password, **extra_fields)
 
-class UserProfile(AbstractBaseUser):
+class UserProfileDD(AbstractBaseUser):
     email = models.EmailField(unique=True)
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
@@ -71,3 +153,4 @@ class UserProfile(AbstractBaseUser):
 
     def __str__(self):
         return self.email
+"""

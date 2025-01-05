@@ -32,7 +32,6 @@
                     // now redirect the user to the main page
 
                     fadeOut();
-
                     //window.location.href = "{% url 'home' %}"; // redirect to home page
 
                 } else {
@@ -67,7 +66,7 @@
                 }, 2000); // Match the duration of the transition
 
             setTimeout(() => {
-                window.location.href = {% url 'home' %}
+                window.location.href = "{{ next|escapejs }}";
             }, 2100); // Match the duration of the transition
         }
     </script>
