@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}
+<title>Signup Page</title>
+{% endblock %}
+
+{% block content %}
+{% block signupWindow %}
+
+{%load static%}
+<head>
+    <link rel="stylesheet" href="{% static 'DatingApp/css/signup.css' %}">
+</head>
+
+<div class="container">
+    <div id="signupWrapper">
+        <!-- Signup Form -->
+        <form id="signupForm">
+            <label for="email">
+                Email Address:
+                <input type="email" id="email" name="email" required>
+            </label>
+            <label for="password1">
+                Password:
+                <input type="password" id="password1" name="password1" required>
+            </label>
+            <label for="password2">
+                Confirm Password:
+                <input type="password" id="password2" name="password2" required onpaste="return false">
+            </label>
+            <label for="firstName">
+                First Name:
+                <input type="text" id="firstName" name="firstName" required>
+            </label>
+            <label for="lastName">
+                Last Name:
+                <input type="text" id="lastName" name="lastName" required>
+            </label>
+            <button type="submit">Sign Up</button>
+        </form>
+
+        <!-- Redirect to Login -->
+        <div class="signin-redirect">
+            Already have an account? Head to sign in <a href="{% url 'login' %}">here</a>.
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+<script>
+    // Prevent Copy-Paste for Password Confirmation
+    document.addEventListener("DOMContentLoaded", function () {
+        const password2 = document.getElementById("password2");
+        password2.onpaste = function (e) {
+            e.preventDefault();
+            alert("Pasting into the confirmation password field is not allowed.");
+        };
+    });
+
+    // Handle Form Submission
+    const signupForm = document.getElementById("signupForm");
+    signupForm.addEventListener("submit", async function (event) {
+        event.preventDefault();
+        const email = document.getElementById("email").value;
+        const password1 = document.getElementById("password1").value;
+        const password2 = document.getElementById("password2").value;
+        const firstName = document.getElementById("firstName").value;
+        const lastName = document.getElementById("lastName").value;
+
+        if (password1 !== password2) {
+            alert("Passwords do not match!");
+            return;
+        }
+
+        try {
+            const response = await fetch("/signup/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email: email,
+                    password: password1,
+                    firstName: firstName,
+                    lastName: lastName,
+                }),
+            });
+
+            if (response.ok) {
+                alert("Signup successful! Redirecting to login...");
+                window.location.href = "{% url 'login' %}";
+            } else {
+                const error = await response.json();
+                alert("Signup failed: " + error.error);
+            }
+        } catch (err) {
+            console.error("Network error:", err);
+        }
+    });
+</script>
+{% endblock content %}

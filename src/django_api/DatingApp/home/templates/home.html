@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+<html lang="en">
+{% block content %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mcgill Dating App</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'DatingApp/css/home.css' %}">
+
+</head>
+<body>
+
+    <section class="features">
+        <div class="feature-card">
+            <img src="https://via.placeholder.com/100" alt="Matching Icon">
+            <h3>Smart Matching</h3>
+            <p>Our advanced algorithm connects you with the most compatible matches.</p>
+        </div>
+        <div class="feature-card">
+            <img src="https://via.placeholder.com/100" alt="Privacy Icon">
+            <h3>Privacy First</h3>
+            <p>Your data is secure with us. We prioritize your privacy at every step.</p>
+        </div>
+        <div class="feature-card">
+            <img src="https://via.placeholder.com/100" alt="Community Icon">
+            <h3>Thriving Community</h3>
+            <p>Join a vibrant community of singles looking for meaningful connections.</p>
+        </div>
+    </section>
+
+</body>
+{% endblock content %}
+</html>
+
+

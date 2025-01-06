@@ -1,0 +1,17 @@
+<!-- This is a child page -->
+{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% block title%} 
+    {{block.super}} : Child 
+     {% endblock%}
+</head>
+<body>
+    {% block content %}
+    <div><h2>This is a child specific title !</h2></div>
+    {% endblock content %}
+</body>
+</html>

@@ -1,80 +1,69 @@
-#  McLovin🎓❤️
+# McLovin🎓❤️
 
-A machine learning-powered dating application specifically designed for McGill University students. The app uses advanced matching algorithms including k-means clustering and vector embeddings to connect students based on their academic interests, faculty, and personal preferences.
+A ML-powered dating application for McGill students. It uses advanced algorithms (k-means clustering, vector embeddings) to connect students based on shared academic interests, faculty, and personal preferences.
 
 ## 🌟 Features
-
-- **Smart Matching**: Uses ML algorithms to find compatible matches
-- **Faculty-Aware**: Considers academic backgrounds in matching
-- **Bio Analysis**: Advanced text analysis of user bios for better matching
-- **Real-time Chat**: (To be implemented)
-- **Profile Verification**: (To be implemented)
-- **Event Matching**: (To be implemented)
+- **Smart Matching** via ML algorithms
+- **Faculty-Aware** pairings
+- **Bio Analysis** with text embeddings
+- **To be added**: Chat, Profile Verification, Event Matching
 
 ## 🛠️ Tech Stack
-
 - **Backend**: Django/Python
 - **ML Framework**: PyTorch
-- **Vector Database**: Weaviate
+- **Vector Database**: Pinecone
 - **Primary Database**: MongoDB
 - **Containerization**: Docker
-- **Authentication**: (To be implemented)
 
 ## 📋 Prerequisites
-
 - Docker & Docker Compose
 - Python 3.9+
 - MongoDB
-- Weaviate
+- Pinecone
 
 ## 🚀 Getting Started
-
 1. **Clone the repository**
-```bash
-git clone https://github.com/yourusername/mcgill-dating-app.git
-cd mcgill-dating-app
-```
-
+   ```bash
+   git clone https://github.com/yourusername/mcgill-dating-app.git
+   cd mcgill-dating-app
+   ```
 2. **Set up environment variables**
-```bash
-cp .env.example .env
-# Edit .env with your configurations
-```
-
+   ```bash
+   cp .env.example .env
+   # Edit .env
+   ```
 3. **Build and run with Docker**
-```bash
-docker-compose build
-docker-compose up -d
-```
-
+   ```bash
+   docker-compose build
+   docker-compose up -d
+   ```
 4. **Access the application**
-- API: http://localhost:8000
-- Weaviate Console: http://localhost:8080
-- MongoDB: localhost:27017
+   - API: http://localhost:8000
+   - MongoDB: localhost:27017
 
 ## 🏗️ Project Structure
-
 ```
 mcgill-dating-app/
 ├── docker/
-│   ├── Dockerfile.api
-│   └── Dockerfile.ml
+│   └── (Dockerfiles and scripts for containerization)
 ├── src/
-│   ├── api/          # Django API
-│   ├── core/         # Core functionality
-│   ├── ml/           # Machine Learning
-│   ├── users/        # User management
-│   └── utils/        # Utilities
+│   ├── frontend/  # TBD later
+│   ├── api/       # Django API (views, URLs, serializers, REST endpoints)
+│   ├── core/      # Core functionality (matching logic, key app classes, services)
+│   ├── ml/        # Machine Learning code (model definitions, embeddings, etc.)
+│   ├── users/     # User management (auth, registration, user model, etc.)
+│   └── utils/     # General-purpose utilities (helpers, validators, etc.)
 ├── tests/
+│   └── (Test files for unit, integration, etc.)
 └── docker-compose.yml
 ```
 
 ## 💻 Development
-
-### Setting Up Development Environment
 ```bash
 # Create virtual environment
 python -m venv venv
+
+# Activate virtual environment
 source venv/bin/activate  # Linux/Mac
 venv\Scripts\activate     # Windows
 
@@ -82,74 +71,43 @@ venv\Scripts\activate     # Windows
 pip install -r requirements.txt
 ```
 
-### Running Tests (To be implemented)
+**Python Integration Tests**:
 ```bash
-python -m pytest
+python pytest tests
 ```
 
-## 🤝 Contributing (To be implemented)
-
-1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
-
 ## 📊 ML Model Details
+- **Embed** user profile data via **SBERT** (PyTorch).
+- **Store** embeddings in **Pinecone** (+ optional sentiment score).
+- **Assign** each user to a cluster via **K-Means** (Pytorch).
+- **Rank** matches within that cluster using **cosine similarity**.
+- **Refine** final scores with metadata weighting
 
-### Profile Matching
-- Uses k-means clustering for initial grouping
-- Employs vector embeddings for bio analysis
-- Considers faculty and major compatibility
-- Detailed algorithm documentation (To be implemented)
+*in the end, this creates a sort of **Matching Elo** for the users per cluster*
 
-### Data Processing
-- Bio text processing using PyTorch
-- Major compatibility scoring
-- Faculty weighting system
-- Data pipeline documentation (To be implemented)
-
-## 🔐 Security (To be implemented)
-
-- Authentication system
-- Data encryption
-- Privacy measures
-- Profile verification
-
-## 📱 API Documentation (To be implemented)
-
-- Authentication endpoints
-- Profile management
-- Matching system
-- Chat system
+## 📱 API, Security, Contributing
+All to be implemented (authentication, endpoints, verification, etc.). PRs welcome!
 
 ## 🎯 Roadmap
-
-- [ ] Implement basic matching algorithm
-- [ ] Add user authentication
-- [ ] Develop chat system
-- [ ] Add profile verification
-- [ ] Implement event matching
-- [ ] Add recommendation system
-- [ ] Develop mobile app
+- [ ] Basic matching algorithm
+- [ ] User authentication
+- [ ] Chat system
+- [ ] Profile verification
+- [ ] Event matching
+- [ ] Recommendation system
+- [ ] Mobile app
 
 ## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License - see [LICENSE](LICENSE) for details.
 
 ## 👥 Team
-
-- Lead Developer: William
-- Developers : Oscar, Dory, Oliver
+- **Lead Developer**: William
+- **Developers**: Oscar, Dory, Oliver
 
 ## 📧 Contact
-
-For any queries regarding the project, please reach out to:
-- Email: william dot lafond at mail dot mcgill dot ca
-- Discord: Water Fountain (or Will if you are in the discord)
+- **Email**: william dot lafond at mail dot mcgill dot ca
+- **Discord**: “Water Fountain” (or “Will”)
 
 ## 🙏 Acknowledgments
-
-- McGill University Faculty
-- Contributors and Maintainers
+- McGill University
 - Open Source Community

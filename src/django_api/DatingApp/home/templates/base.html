@@ -1,0 +1,55 @@
+<!-- Improved Base HTML Template -->
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <!-- Meta Information -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'DatingApp/css/base.css' %}">
+    <!-- Dynamic Page Title -->
+    {% block title %}
+    <title>McGill Dating App</title>
+    {% endblock %}
+
+    <!-- Additional Page-Specific CSS -->
+    {% block extra_style %}{% endblock %}
+</head>
+<body>
+
+<header>
+    McGill Dating App - Find Your Connection
+</header>
+
+<!-- Navbar -->
+<nav>
+    <div>
+        <a class="navbar-brand" href="{% url 'home' %}">DatingApp</a>
+    </div>
+    <div class="navbar-options">
+        {% if loggedIn %}
+        <a class="navbar-brand" href="{% url 'user_dashboard' user_id=user_id %}">Dashboard</a>
+        <a class="navbar-brand" href="{% url 'logout' %}">LogOut</a>
+        {% else %}
+        <a class="navbar-brand" href="{% url 'signup' %}">Login / Signup</a>
+        {% endif %}
+    </div>
+</nav>
+
+<!-- Content Block -->
+<main>
+    {% block content %}
+    <!-- Main content will load here -->
+    {% endblock %}
+</main>
+
+<!-- Footer -->
+
+<footer>
+    &copy; 2024 McGill Dating App. All Rights Reserved. |
+    <a href="{% url 'privacy_policy' %}">Privacy Policy</a> |
+    <a href="{% url 'terms_of_service' %}">Terms of Service</a>
+</footer>
+
+</body>
+</html>
