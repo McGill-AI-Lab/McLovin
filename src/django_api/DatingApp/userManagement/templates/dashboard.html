@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+{%extends 'base.html'%}
+{%load static%}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard</title>
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}"> <!-- Link to external CSS -->
+</head>
+{% block content %}
+<body>
+<div class="container">
+    <h1>Welcome to Your Dashboard</h1>
+
+    <div class="user-info">
+        <h3>Profile Information</h3>
+        <ul>
+            <li><strong>Name:</strong> {{ user_profile.name }}</li>
+            <li><strong>Age:</strong> {{ user_profile.age }}</li>
+            <li><strong>Grade:</strong> {{ user_profile.grade }}</li>
+            <li><strong>Ethnicity:</strong> {{ user_profile.ethnicity|join:", " }}</li>
+            <li><strong>Faculty:</strong> {{ user_profile.faculty }}</li>
+            <li><strong>Major:</strong> {{ user_profile.major|join:", " }}</li>
+            <li><strong>Bio:</strong> {{ user_profile.bio }}</li>
+            <li><strong>Preferences:</strong> {{ user_profile.preferences }}</li>
+        </ul>
+    </div>
+
+    <div class="form-section">
+        <h3>Edit Your Profile</h3>
+        <form method="post">
+            {% csrf_token %}
+
+            <label for="name">Name:</label>
+            <input type="text" name="name" id="name" value="{{ user_profile.name }}" required>
+
+            <label for="age">Age:</label>
+            <input type="number" name="age" id="age" value="{{ user_profile.age }}" required min="0">
+
+            <label for="grade">Grade:</label>
+            <input type="text" name="grade" id="grade" value="{{ user_profile.grade }}" required>
+
+            <label for="ethnicity">Ethnicity (comma-separated):</label>
+            <input type="text" name="ethnicity" id="ethnicity" value="{{ user_profile.ethnicity|join:', ' }}">
+
+            <label for="faculty">Faculty:</label>
+            <input type="text" name="faculty" id="faculty" value="{{ user_profile.faculty }}" required>
+
+            <label for="major">Major (comma-separated):</label>
+            <textarea name="major" id="major">{{ user_profile.major|join:', ' }}</textarea>
+
+            <label for="bio">Bio:</label>
+            <textarea name="bio" id="bio" rows="5">{{ user_profile.bio }}</textarea>
+
+            <label for="preferences">Preferences:</label>
+            <textarea name="preferences" id="preferences" rows="4">{{ user_profile.preferences }}</textarea>
+
+            <button type="submit" class="save" name="edit">Save Changes</button>
+        </form>
+    </div>
+
+    <div class="form-section">
+        <h3>Delete Your Profile</h3>
+        <form method="post" onsubmit="return confirm('Are you sure you want to delete your profile?');">
+            {% csrf_token %}
+            <button type="submit" class="delete" name="delete">Delete Profile</button>
+        </form>
+    </div>
+
+    <div class="back-link">
+        <a href="{% url 'home' %}">⟵ Back to Home</a>
+    </div>
+</div>
+</body>
+{% endblock content %}
+</html>

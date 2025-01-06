@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script>
+        const userNextUrl = "{{ next|escapejs }}";  // Embedding Django variable
+    </script>
+    {%load static%}
+    <script src="{%static 'DatingApp/js/login.js'%}"></script>
+    <link rel="stylesheet" href="{%static 'DatingApp/css/login.css'%}">
+</head>
+<body>
+{% include "base.html" %}
+{% block loginWindow %}
+<div class="container">
+<div id="loginWrapper">
+    <form id="loginForm">
+        <label>
+            Email:
+            <input type="email" id="email" name="email" required>
+        </label>
+        <label>
+            Password:
+            <input type="password" id="password" name="password" required>
+        </label>
+        <button type="submit">Log In</button>
+    </form>
+        <div class='notify -hidden'>
+
+        </div>
+</div>
+</div>
+{% endblock%}
+</body>
+</html>
+

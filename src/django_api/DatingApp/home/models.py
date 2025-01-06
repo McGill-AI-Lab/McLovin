@@ -1,3 +1,7 @@
-from django.db import models
+from djongo import models
+from pymongo import MongoClient
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from functools import wraps
+from django.http import JsonResponse
+import json
 
-# Create your models here.

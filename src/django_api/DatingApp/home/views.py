@@ -2,6 +2,9 @@ from django.shortcuts import render
 from django.http import HttpResponse 
 from django.http import JsonResponse 
 from django.template import Template, Context
+#from django.contrib.auth.decorators import login_required
+import sys
+from userManagement.user import login_required
 
 def credits(request):
     sample_dict = {
@@ -47,3 +50,23 @@ def base(request):
 def module(request):
     
     return render(request,"imported.html")
+
+def home(request):
+    # check if user is logged in, and add it to the context variables
+
+    # retrieve the user instance of the logged in user to display name etc..
+    loggedIn = False;
+    if "user_id" in request.session.keys():
+        loggedIn = True;
+    context = {
+        "loggedIn" : loggedIn,
+        "options" : request.session.keys(),
+    }
+
+    return render(request,"home.html",context)
+
+def privacy_policy(request):
+    return render(request,"privacy_policy.html")
+
+def terms_of_service(request):
+    return render(request,"terms_of_service.html")
