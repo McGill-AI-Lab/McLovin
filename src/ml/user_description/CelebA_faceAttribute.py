@@ -62,6 +62,14 @@ test_dataset = CustomCelebADataset(test_dataset, RELEVANT_ATTRIBUTES, transform=
 train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle = True)
 test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle = False)
 
+'''
+for i, (images, labels) in enumerate(train_loader):
+    print(images.size()) #torch.Size([32, 3, 128, 128])
+    print(labels.size()) #torch.Size([32, 26])
+    print(images.dtype) #torch.float32
+    print(labels.dtype) #torch.int64
+    break
+'''
 
 #Defining the model
 class ConvNet(nn.Module):
@@ -89,7 +97,7 @@ class ConvNet(nn.Module):
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
 
-        #no relu since this will be applied in the loss function
+        #no relu since this will be applied in the loss function by ConvNet
         x = self.fc3(x)
         return x
 
@@ -97,8 +105,9 @@ class ConvNet(nn.Module):
 model = ConvNet().to(device)
 
 #Establishing our criterion and optimizer
-criterion = nn.BCEWithLogitsLoss()
+criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr = lr)
+
 
 n_steps = len(train_loader)
 
@@ -107,7 +116,7 @@ for epoch in range(max_epoch):
     for i, (images, labels) in enumerate(train_loader):
 
         images = images.to(device)
-        labels = labels.to(device)
+        labels = labels.float().to(device) #ConvNet must take a float for labels
 
         #forward pass first
         outputs = model(images)
@@ -125,7 +134,8 @@ print('Finished Training!')
 FILE = "model.pth"
 torch.save(model.state_dict(), FILE)
 
-#Validation loop
+'''
+print('Starting the validation loop')
 with torch.no_grad():
     n_correct = 0
     n_samples = 0
@@ -133,7 +143,7 @@ with torch.no_grad():
     n_class_correct = [0 for i in range(26)]
     n_class_samples = [0 for i in range(26)]
 
-    for images, labels in test_loader:
+    for i, (images, labels) in enumerate(test_loader):
         images = images.to(device)
         labels = labels.to(device)
         outputs = model(images)
@@ -149,9 +159,11 @@ with torch.no_grad():
         for i in range(26):
             n_class_correct[i] += ((predicted[:, i] == labels[:, i])).sum().item()
             n_class_samples[i] += labels[:, i].size(0)
+        
+        if (i+1)%100 == 0:
+            print(i, 'iterations have been completed')
 
     for i in range(26):
         accuracy = 100.0 * n_class_correct[i] / n_class_samples[i] if n_class_samples[i] > 0 else 0.0
         print(f"Attribute {i}: Accuracy = {accuracy:.2f}%")
-
-#my questions: how to access external storage, why can't I import torch
+'''
