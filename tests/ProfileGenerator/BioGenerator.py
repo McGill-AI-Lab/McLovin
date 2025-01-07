@@ -12,12 +12,12 @@ from dotenv import load_dotenv
 
 import pandas.errors
 
-LIM_DAY_API = 1500
+LIM_DAY_API = 1300
 LIM_MIN_API = 15
 
-hobbies_JSON = 'ProfileGenerator/json_prompts/hobbies.json'
-phys_traits_JSON = 'ProfileGenerator/json_prompts/phys_traits.json'
-pers_traits_JSON = 'ProfileGenerator/json_prompts/pers_traits.json'
+hobbies_JSON = 'tests/ProfileGenerator/json_prompts/hobbies.json'
+phys_traits_JSON = 'tests/ProfileGenerator/json_prompts/phys_traits.json'
+pers_traits_JSON = 'tests/ProfileGenerator/json_prompts/pers_traits.json'
 
 dict_data = {
     "gender": [],
@@ -44,7 +44,7 @@ majors = [
 ]
 
 
-with open("ProfileGenerator/json_prompts/prompts.json") as file:
+with open("tests/ProfileGenerator/json_prompts/prompts.json") as file:
 
     #Getting each prompt as an f string
     data = json.load(file)
@@ -172,7 +172,7 @@ def generate_bio(major, gender, GOI, hobby_prompt, phys_trait, pers_trait):
 
     #Setting up the text generator
     load_dotenv()
-    API = os.getenv("API_KEY")
+    API = os.getenv("GEMINI_KEY")
     genai.configure(api_key=API)
     GenModel = genai.GenerativeModel("gemini-1.5-flash", system_instruction=formatted_instructions)
 
@@ -221,7 +221,7 @@ def main():
                     existing_df = pd.read_csv(csv_file)
                     combined_df = pd.concat([existing_df, df], ignore_index=True)
                     combined_df.drop_duplicates(inplace= True)
-                    combined_df.to_csv(csv_file)
+                    combined_df.to_csv(csv_file, index=False)
 
                 except pandas.errors.ParserError:
                     print(f"Error parsing {csv_file}")
@@ -229,6 +229,8 @@ def main():
             else:
                 df = pd.DataFrame(dict_data)
                 df.to_csv(csv_file, index=False)
+
+        Jm.increment_count()
 
         # maximum of 15 api calls per minute
         if Jm.load_count() % LIM_MIN_API == 0 and Jm.load_count() != 0:
@@ -239,8 +241,5 @@ def main():
             else:
                 pass
             start_time = time.time()
-
-        Jm.increment_count()
-
 
 main()
