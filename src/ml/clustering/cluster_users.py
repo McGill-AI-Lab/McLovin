@@ -43,7 +43,7 @@ def cluster_users(n_clusters: int, random_state: int):
         all_bio_embeddings.append(match['values'])
     np_bio_embeddings = np.array(all_bio_embeddings)
 
-    # normalize the distributions of each np_array
+    # normalize the distributions of each np_array.
     scaler = StandardScaler()
     normalized_bio_embeddings = scaler.fit_transform(np_bio_embeddings)
 
