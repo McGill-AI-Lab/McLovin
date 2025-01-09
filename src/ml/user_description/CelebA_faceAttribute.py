@@ -8,13 +8,14 @@ from torchvision import transforms
 
 import matplotlib.pyplot as plt
 
+import time
 
 #device configuration
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 #hyperparameters
-lr = 0.001
-max_epoch = 8
+lr = 0.0001
+max_epoch = 4
 batch_size = 32
 
 #Defining which columns I wish to preserver
@@ -50,13 +51,13 @@ transform = transforms.Compose([
 
 #Defining the datasets for training and testing
 train_dataset = torchvision.datasets.CelebA(root='./data', split='train', target_type='attr',
-                                             download=True, transform=None)
+                                             download=True, transform=transform)
 test_dataset = torchvision.datasets.CelebA(root='./data', split='test', target_type='attr',
-                                             download=True, transform=None)
+                                             download=True, transform=transform)
 
 #Creating the custom dataset for training and testing (ie removing irrelevant columns)
-train_dataset = CustomCelebADataset(train_dataset, RELEVANT_ATTRIBUTES, transform=transform)
-test_dataset = CustomCelebADataset(test_dataset, RELEVANT_ATTRIBUTES, transform=transform)
+train_dataset = CustomCelebADataset(train_dataset, RELEVANT_ATTRIBUTES, transform=None)
+test_dataset = CustomCelebADataset(test_dataset, RELEVANT_ATTRIBUTES, transform=None)
 
 #Loading the training and testing data
 train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle = True)
@@ -105,21 +106,25 @@ class ConvNet(nn.Module):
 model = ConvNet().to(device)
 
 #Establishing our criterion and optimizer
-criterion = nn.CrossEntropyLoss()
+criterion = nn.BCEWithLogitsLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr = lr)
 
 
 n_steps = len(train_loader)
 
+
 #Defining the training loop
 for epoch in range(max_epoch):
+
+    start_time = time.time()
     for i, (images, labels) in enumerate(train_loader):
 
         images = images.to(device)
-        labels = labels.float().to(device) #ConvNet must take a float for labels
+        labels = labels.float().to(device) #BCEwithlogits requires the target to be float 32
 
         #forward pass first
-        outputs = model(images)
+        outputs = model(images) #already float 32 
+
         loss = criterion(outputs, labels)
 
         #backward pass and optimizer
@@ -130,11 +135,15 @@ for epoch in range(max_epoch):
         if (i+1)%100 == 0:
             print(f'epoch {epoch+1}/ {max_epoch}, step {i+1}/{n_steps}, loss = {loss.item():4f}')
 
+    epoch_time = time.time()
+    elapsed_time = epoch_time - start_time
+    print(f'Time for epoch {epoch + 1} is {elapsed_time}')
+
 print('Finished Training!')
 FILE = "model.pth"
 torch.save(model.state_dict(), FILE)
 
-'''
+
 print('Starting the validation loop')
 with torch.no_grad():
     n_correct = 0
@@ -145,7 +154,7 @@ with torch.no_grad():
 
     for i, (images, labels) in enumerate(test_loader):
         images = images.to(device)
-        labels = labels.to(device)
+        labels = labels.to(device).float() #target must be float type
         outputs = model(images)
 
         probabilities = torch.sigmoid(outputs)
@@ -166,4 +175,3 @@ with torch.no_grad():
     for i in range(26):
         accuracy = 100.0 * n_class_correct[i] / n_class_samples[i] if n_class_samples[i] > 0 else 0.0
         print(f"Attribute {i}: Accuracy = {accuracy:.2f}%")
-'''

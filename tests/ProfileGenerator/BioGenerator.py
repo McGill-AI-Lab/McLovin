@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 
 import pandas.errors
 
-LIM_DAY_API = 1300
+LIM_DAY_API = 1500
 LIM_MIN_API = 15
 
 hobbies_JSON = 'tests/ProfileGenerator/json_prompts/hobbies.json'
@@ -211,9 +211,9 @@ def main():
 
         generate_bio(major, gender, GOI, hobbies, phys_traits, pers_traits)
 
-        #saving after every 10 iterations
-        if Jm.load_count()%10 == 0 and Jm.load_count() != 0:
-            print("Saving 10 iterations")
+        #saving after every 100 iterations
+        if Jm.load_count()%100 == 0 and Jm.load_count() != 0:
+            print("Saving 100 iterations")
             csv_file = 'profiles.csv'
             df = pd.DataFrame(dict_data)
             if os.path.exists(csv_file):
