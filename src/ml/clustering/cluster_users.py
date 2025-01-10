@@ -1,10 +1,10 @@
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 import numpy as np
-from src.core.profile import UserProfile
+#from src.core.profile import UserProfile
 from pinecone import Pinecone
 import os
-import time
+#import time
 from dotenv import load_dotenv
 
 load_dotenv(dotenv_path='.env')

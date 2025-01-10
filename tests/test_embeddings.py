@@ -5,7 +5,7 @@ def test_embeddings():
     embedder = Embedder()
 
     test_profile = UserProfile(
-        user_id="301",
+        user_id="302",
         name="williamkiemlafond",
         age=21,
         grade=Grade.U2,
