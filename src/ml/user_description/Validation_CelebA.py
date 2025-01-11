@@ -6,9 +6,7 @@ from torch.utils.data import Dataset
 import torchvision
 from torchvision import transforms
 
-import time
-
-#device configuration
+#defining the device
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 #hyperparameters
@@ -47,33 +45,19 @@ transform = transforms.Compose([
     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))  # Normalize
 ])
 
-#Defining the datasets for training and testing
-train_dataset = torchvision.datasets.CelebA(root='./data', split='train', target_type='attr',
-                                             download=True, transform=transform)
+#Defining the datasets for testing
 test_dataset = torchvision.datasets.CelebA(root='./data', split='test', target_type='attr',
                                              download=True, transform=transform)
 
-#Creating the custom dataset for training and testing (ie removing irrelevant columns)
-train_dataset = CustomCelebADataset(train_dataset, RELEVANT_ATTRIBUTES, transform=None)
+#Creating the custom dataset for testing (ie removing irrelevant columns)
 test_dataset = CustomCelebADataset(test_dataset, RELEVANT_ATTRIBUTES, transform=None)
 
-#Loading the training and testing data
-train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle = True)
+#Loading the testing data
 test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle = False)
-
-'''
-for i, (images, labels) in enumerate(train_loader):
-    print(images.size()) #torch.Size([32, 3, 128, 128])
-    print(labels.size()) #torch.Size([32, 26])
-    print(images.dtype) #torch.float32
-    print(labels.dtype) #torch.int64
-    break
-'''
 
 #Defining the model
 class ConvNet(nn.Module):
     def __init__(self):
-        #calling the init of the super function
         super().__init__()
 
         #defining the convolutional layers as well as the pool layer
@@ -95,49 +79,45 @@ class ConvNet(nn.Module):
         x = x.view(-1, 128 * 30 * 30)  # FLATTENS THE TENSOR
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
-
-        #no relu since this will be applied in the loss function by ConvNet
         x = self.fc3(x)
         return x
 
-#Creating an instance to our ConvNet model
-model = ConvNet().to(device)
-
-#Establishing our criterion and optimizer
-criterion = nn.BCEWithLogitsLoss()
-optimizer = torch.optim.Adam(model.parameters(), lr = lr)
-
-
-n_steps = len(train_loader)
-
-
-#Defining the training loop
-for epoch in range(max_epoch):
-
-    start_time = time.time()
-    for i, (images, labels) in enumerate(train_loader):
-
-        images = images.to(device)
-        labels = labels.float().to(device) #BCEwithlogits requires the target to be float 32
-
-        #forward pass first
-        outputs = model(images) #already float 32 
-
-        loss = criterion(outputs, labels)
-
-        #backward pass and optimizer
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-
-        if (i+1)%100 == 0:
-            print(f'epoch {epoch+1}/ {max_epoch}, step {i+1}/{n_steps}, loss = {loss.item():4f}')
-
-    epoch_time = time.time()
-    elapsed_time = epoch_time - start_time
-    print(f'Time for epoch {epoch + 1} is {elapsed_time}')
-
-print('Finished Training!')
+#defining the model
 FILE = "model.pth"
-torch.save(model.state_dict(), FILE)
+loaded_model = ConvNet().to(device)
+loaded_model.load_state_dict(torch.load(FILE, map_location=device))
+loaded_model.eval()
+
+print('Starting the validation loop')
+with torch.no_grad():
+    n_correct = 0
+    n_samples = 0
+
+    n_class_correct = [0 for i in range(26)]
+    n_class_samples = [0 for i in range(26)]
+
+    for i, (images, labels) in enumerate(test_loader):
+        images = images.to(device)
+        labels = labels.to(device).float() #target must be float type
+        outputs = loaded_model(images)
+
+        probabilities = torch.sigmoid(outputs)
+
+        #convert probabilities into a binary assessement with 0.5 being the threshold, 
+        predicted = (probabilities > 0.5).float()
+
+        n_samples += labels.size(0) #this should represent the batch size
+
+        # For each attribute, update correct and total counts
+        for j in range(26):
+            n_class_correct[j] += ((predicted[:, j] == labels[:, j])).sum().item()
+            n_class_samples[j] += labels[:, j].size(0)
+        
+        if (i+1)%10 == 0:
+            print(i, 'batches have been completed')
+
+    for i in range(26):
+        accuracy = 100.0 * n_class_correct[i] / n_class_samples[i] if n_class_samples[i] > 0 else 0.0
+        print(f"Attribute {i}: Accuracy = {accuracy:.2f}%")
+
 
