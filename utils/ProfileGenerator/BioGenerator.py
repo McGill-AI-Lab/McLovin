@@ -5,8 +5,8 @@ import JSON_manipulation as Jm
 import pandas as pd
 import time
 import os
-
 import google.generativeai as genai
+
 #Api Holder
 from dotenv import load_dotenv
 
@@ -15,13 +15,12 @@ import pandas.errors
 LIM_DAY_API = 1300
 LIM_MIN_API = 15
 
-hobbies_JSON = 'tests/ProfileGenerator/json_prompts/hobbies.json'
-phys_traits_JSON = 'tests/ProfileGenerator/json_prompts/phys_traits.json'
-pers_traits_JSON = 'tests/ProfileGenerator/json_prompts/pers_traits.json'
+hobbies_JSON = 'utils/ProfileGenerator/json_prompts/hobbies.json'
+phys_traits_JSON = 'utils/ProfileGenerator/json_prompts/phys_traits.json'
+pers_traits_JSON = 'utils/ProfileGenerator/json_prompts/pers_traits.json'
 
 dict_data = {
     "gender": [],
-    "Attracted to": [],
     "major": [],
     "hobbies": [],
     "Attractive phys traits": [],
@@ -44,7 +43,7 @@ majors = [
 ]
 
 
-with open("tests/ProfileGenerator/json_prompts/prompts.json") as file:
+with open("utils/ProfileGenerator/json_prompts/prompts.json") as file:
 
     #Getting each prompt as an f string
     data = json.load(file)
@@ -76,19 +75,14 @@ def hobby_generator(major):
 
             # less than 4 gets specific hobby, greater than 4 generates general hobby
             x = randint(0, 10)
-
             if x <= 4:
                 hobby = data[major][randint(0, len(data[major]) - 1)]
-
             else:
                 hobby = data['General'][randint(0, len(data['General']) - 1)]
 
             user_hobbies.append(hobby)
             i += 1
-
-
     hobby_prompt = ", ".join(user_hobbies)
-
     dict_data['hobbies'].append(hobby_prompt)
 
     return hobby_prompt
@@ -97,13 +91,13 @@ def hobby_generator(major):
 def gender_generator():
     genders = ["female", "male"]
     probabilities = [0.49, 0.48]
-
     selected_gender = random.choices(genders, probabilities, k=1)
-
     dict_data['gender'].append(selected_gender[0])
 
     return selected_gender[0]
 
+
+'''
 def gender_of_interest(self_gender):
     sexualities = ["heterosexual", "homosexual"]
     probabilities = [0.9, 0.04]
@@ -125,47 +119,46 @@ def gender_of_interest(self_gender):
     dict_data['Attracted to'].append(GOI)
 
     return GOI
+'''
 
-
-def phys_trait_generator(gender_interest):
+def phys_trait_generator(self_gender):
     trait_num = randint(1, 3)
-    traits_of_interest = []
+    self_traits = []
     i = 1
     while i <= trait_num:
         with open(phys_traits_JSON) as file:
             data = json.load(file)
-            trait = data[gender_interest][randint(0, len(data[gender_interest]) - 1)]
-            traits_of_interest.append(trait)
+            trait = data[self_gender][randint(0, len(data[self_gender]) - 1)]
+            self_traits.append(trait)
         i+=1
 
-    str_phys_traits = ', '.join(traits_of_interest)
+    str_phys_traits = ', '.join(self_traits)
     dict_data['Attractive phys traits'].append(str_phys_traits)
     return str_phys_traits
 
 
-def pers_trait_generator(gender_interest):
+def pers_trait_generator(self_gender):
     trait_num = randint(1, 3)
-    traits_of_interest = []
+    self_traits = []
     i = 1
     while i <= trait_num:
         with open(pers_traits_JSON) as file:
             data = json.load(file)
-            trait = data[gender_interest][randint(0, len(data[gender_interest]) - 1)]
-            traits_of_interest.append(trait)
+            trait = data[self_gender][randint(0, len(data[self_gender]) - 1)]
+            self_traits.append(trait)
         i+=1
 
-    str_pers_traits = ', '.join(traits_of_interest)
+    str_pers_traits = ', '.join(self_traits)
     dict_data['Attractive pers traits'].append(str_pers_traits)
     return str_pers_traits
 
-def generate_bio(major, gender, GOI, hobby_prompt, phys_trait, pers_trait):
+def generate_bio(major, gender, hobby_prompt, phys_trait, pers_trait):
 
     #Formatting the instructions for the text generator
     instructions = f'{instruction_prompts[randint(0,prompts_count - 1)]}'
     formatted_instructions = instructions.format(gender=gender,
                                                  major=major,
                                                  hobby_prompt=hobby_prompt,
-                                                 GOI=GOI,
                                                  phys_trait=phys_trait,
                                                  pers_trait=pers_trait
                                                  )
@@ -182,7 +175,7 @@ def generate_bio(major, gender, GOI, hobby_prompt, phys_trait, pers_trait):
                                         safety_settings = {
                                             'HATE': 'BLOCK_NONE',
                                             'HARASSMENT': 'BLOCK_NONE',
-                                            'SEXUAL': 'BLOCK_NONE',
+                                            'SEXUAL': 'BLOCK_NONE', # ooookay dory
                                             'DANGEROUS': 'BLOCK_NONE'
                                         },
                                         generation_config=genai.types.GenerationConfig(
@@ -205,11 +198,11 @@ def main():
         major = major_generator(majors)
         hobbies = hobby_generator(major)
         gender = gender_generator()
-        GOI = gender_of_interest(gender)
-        phys_traits = phys_trait_generator(GOI)
-        pers_traits = pers_trait_generator(GOI)
+        #GOI = gender_of_interest(gender)
+        phys_traits = phys_trait_generator(gender)
+        pers_traits = pers_trait_generator(gender)
 
-        generate_bio(major, gender, GOI, hobbies, phys_traits, pers_traits)
+        generate_bio(major, gender, hobbies, phys_traits, pers_traits)
 
         #saving after every 10 iterations
         if Jm.load_count()%10 == 0 and Jm.load_count() != 0:

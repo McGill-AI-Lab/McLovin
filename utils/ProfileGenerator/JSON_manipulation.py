@@ -1,7 +1,8 @@
+import csv
 import json
 from datetime import datetime
 
-API_COUNT_FILE = "tests/ProfileGenerator/api_calls_count.json"
+API_COUNT_FILE = "utils/ProfileGenerator/api_calls_count.json"
 
 def load_count():
     try:

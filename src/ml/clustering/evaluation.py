@@ -26,7 +26,7 @@ def evaluate_kmeans(embeddings: np.ndarray, k_range: range = range(2, 11)) -> Di
     }
 
     for k in k_range:
-        kmeans = KMeans(n_clusters=k, random_state=42)
+        kmeans = KMeans(n_clusters=k, random_state=42, n_init='auto')
         labels = kmeans.fit_predict(embeddings)
 
         results['inertias'].append(kmeans.inertia_)
@@ -132,7 +132,7 @@ def main():
     # Analyze clusters
     train_stats = analyze_clusters(train_embeddings, train_labels)
     val_stats = analyze_clusters(val_embeddings, val_labels)
-
+    print("\n------------------------------------------------------------------")
     print("\nTraining Set Cluster Analysis:")
     for cluster_id, stats in train_stats.items():
         print(f"\n{cluster_id}:")
@@ -140,6 +140,7 @@ def main():
         print(f"Mean distance to center: {stats['mean_distance_to_center']:.3f}")
         print(f"Density: {stats['density']:.3f}")
 
+    print("\n------------------------------------------------------------------")
     print("\nValidation Set Cluster Analysis:")
     for cluster_id, stats in val_stats.items():
         print(f"\n{cluster_id}:")

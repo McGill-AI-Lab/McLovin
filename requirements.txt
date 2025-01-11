@@ -3,6 +3,8 @@ numpy
 torch
 transformers
 sentence-transformers
+google-generativeai
+typing-extensions==4.8.0
 
 # Pinecone
 pinecone-client
