@@ -117,3 +117,6 @@ cover/
 # Dependencies
 node_modules/
 bower_components/
+
+# Outputs
+outputs/

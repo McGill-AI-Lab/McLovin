@@ -188,7 +188,15 @@ def generate_bio(major, gender, hobby_prompt, phys_trait, pers_trait):
     print(formatted_response)
     dict_data['bios'].append(formatted_response)
 
-def main():
+
+if __name__ == "__main__":
+    # Ensure 'outputs/' directory exists
+    output_dir = 'outputs'
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Define the output file path
+    csv_file = os.path.join(output_dir, 'profiles.csv')
+
     # limited at 15 calls per minute
     start_time = time.time()
     Jm.reset_count()
@@ -198,41 +206,32 @@ def main():
         major = major_generator(majors)
         hobbies = hobby_generator(major)
         gender = gender_generator()
-        #GOI = gender_of_interest(gender)
         phys_traits = phys_trait_generator(gender)
         pers_traits = pers_trait_generator(gender)
 
         generate_bio(major, gender, hobbies, phys_traits, pers_traits)
 
-        #saving after every 10 iterations
-        if Jm.load_count()%10 == 0 and Jm.load_count() != 0:
+        # Saving after every 10 iterations
+        if Jm.load_count() % 10 == 0 and Jm.load_count() != 0:
             print("Saving 10 iterations")
-            csv_file = 'profiles.csv'
             df = pd.DataFrame(dict_data)
             if os.path.exists(csv_file):
                 try:
                     existing_df = pd.read_csv(csv_file)
                     combined_df = pd.concat([existing_df, df], ignore_index=True)
-                    combined_df.drop_duplicates(inplace= True)
+                    combined_df.drop_duplicates(inplace=True)
                     combined_df.to_csv(csv_file, index=False)
-
                 except pandas.errors.ParserError:
                     print(f"Error parsing {csv_file}")
-
             else:
-                df = pd.DataFrame(dict_data)
                 df.to_csv(csv_file, index=False)
 
         Jm.increment_count()
 
-        # maximum of 15 api calls per minute
+        # Maximum of 15 API calls per minute
         if Jm.load_count() % LIM_MIN_API == 0 and Jm.load_count() != 0:
             elapsed_time = time.time() - start_time
-            if elapsed_time > 0:
-                print("15 iterations done. Waiting for next minute")
-                time.sleep(60 - elapsed_time)
-            else:
-                pass
+            sleep_time = max(0, 60 - elapsed_time)  # Sleep for remaining time in the minute
+            print(f"15 iterations done. Waiting {sleep_time} seconds before continuing.")
+            time.sleep(sleep_time)
             start_time = time.time()
-
-main()

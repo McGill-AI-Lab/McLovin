@@ -3,8 +3,6 @@ import numpy as np
 from sklearn.metrics import silhouette_score, calinski_harabasz_score
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
-from typing import Dict, Tuple
-import seaborn as sns
 from sklearn.model_selection import train_test_split
 from pinecone import Pinecone
 import os
