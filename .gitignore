@@ -120,4 +120,4 @@ bower_components/
 
 # outputs
 data/
-outputs/
+#outputs/ uncomment if outputs get too heavy

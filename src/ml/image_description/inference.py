@@ -55,10 +55,10 @@ def get_attributes(model, image_tensor):
 
 if __name__ == "__main__":
     model = load_model()
-    transformed_image = process_image('helpers/face_generator/suzy.jpg')
+    transformed_image = process_image('helpers/sample_faces/suzy.jpg')
     print(transformed_image)
     # debug
-    #im = Image.open('helpers/face_generator/suzy.jpg')
+    #im = Image.open('helpers/sample_faces/suzy.jpg')
     #im.show()
 
     traits = get_attributes(model, transformed_image)
