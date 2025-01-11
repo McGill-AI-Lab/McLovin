@@ -3,6 +3,8 @@ import numpy as np
 from sklearn.metrics import silhouette_score, calinski_harabasz_score
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
+from typing import Dict, Tuple
+import seaborn as sns
 from sklearn.model_selection import train_test_split
 from pinecone import Pinecone
 import os
@@ -35,6 +37,10 @@ def evaluate_kmeans(embeddings: np.ndarray, k_range: range = range(2, 11)) -> Di
 
 def visualize_evaluation(results: Dict) -> None:
     """Plot evaluation metrics."""
+
+    output_dir = 'outputs'
+    os.makedirs(output_dir, exist_ok=True)
+
     fig, axes = plt.subplots(1, 3, figsize=(15, 5))
 
     # Elbow curve
@@ -56,7 +62,8 @@ def visualize_evaluation(results: Dict) -> None:
     axes[2].set_title('Calinski-Harabasz Index')
 
     plt.tight_layout()
-    plt.savefig('kmeans_evaluation.png')
+    output_file = os.path.join(output_dir, 'kmeans_evaluation.png')
+    plt.savefig(output_file)
     plt.close()
 
 def analyze_clusters(embeddings: np.ndarray, labels: np.ndarray) -> Dict:
