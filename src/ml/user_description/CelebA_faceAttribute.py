@@ -2,10 +2,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset
-
 import torchvision
 from torchvision import transforms
-
 import time
 
 #device configuration
@@ -27,14 +25,14 @@ class CustomCelebADataset(Dataset):
 
     def __getitem__(self, idx):
         image, labels = self.dataset[idx]  # Get image and labels
-        
+
         # Keep only the relevant attributes
         labels = labels[self.relevant_attributes] #Tensor indexing is possible since we will be working with torch.Tensor()
-        
+
         # Apply transformations if defined
         if self.transform:
             image = self.transform(image)
-        
+
         return image, labels
 
     def __len__(self):
@@ -121,7 +119,7 @@ for epoch in range(max_epoch):
         labels = labels.float().to(device) #BCEwithlogits requires the target to be float 32
 
         #forward pass first
-        outputs = model(images) #already float 32 
+        outputs = model(images) #already float 32
 
         loss = criterion(outputs, labels)
 
@@ -140,4 +138,3 @@ for epoch in range(max_epoch):
 print('Finished Training!')
 FILE = "model.pth"
 torch.save(model.state_dict(), FILE)
-

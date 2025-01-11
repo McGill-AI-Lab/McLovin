@@ -15,3 +15,5 @@ django
 
 # Test runner (if you want tests in your main requirements)
 pytest
+
+gdown
