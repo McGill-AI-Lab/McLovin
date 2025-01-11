@@ -32,4 +32,5 @@ def generate_description(traits):
             temperature=1.0,
         ),
     )
+
     return response.text

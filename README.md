@@ -51,8 +51,11 @@ mcgill-dating-app/
 │   ├── api/       # Django API (views, URLs, serializers, REST endpoints)
 │   ├── core/      # Core functionality (matching logic, key app classes, services)
 │   ├── ml/        # Machine Learning code (model definitions, embeddings, etc.)
+│   │   ├── clustering/        # K-means, cluster-based logic
+│   │   ├── matching/          # Matching logic / embeddings
+│   │   └── image_description/ # CNN and generative text
 │   ├── users/     # User management (auth, registration, user model, etc.)
-│   └── utils/     # General-purpose utilities (helpers, validators, etc.)
+│   └── helpers/     # General-purpose utilities (helpers, validators, etc.)
 ├── tests/
 │   └── (Test files for unit, integration, etc.)
 └── docker-compose.yml
@@ -76,6 +79,13 @@ pip install -r requirements.txt
 python pytest tests
 ```
 
+# List of API keys
+/.env should look like this:
+PINECONE_KEY= **<Fill in Your Key>**
+GEMINI_KEY= **<Fill in Your Key>**
+GOOGLE_API_KEY= **<Fill in Your Key>**
+celeba_key= **<Fill in Your Key>**
+
 ## 📊 ML Model Details
 - **Embed** user profile data via **SBERT** (PyTorch).
 - **Store** embeddings in **Pinecone** (+ optional sentiment score).
@@ -84,6 +94,10 @@ python pytest tests
 - **Refine** final scores with metadata weighting
 
 *in the end, this creates a sort of **Matching Elo** for the users per cluster*
+
+### Facial Attribute Detection & Description (still to be fixed)
+- **CelebA-based Convolutional Network** classifies up to 26 facial attributes (Male, Bald, Smiling, etc.).
+- **Generative AI** (using Google's GEMINI) converts these detected attributes into concise descriptive text.
 
 ## 📱 API, Security, Contributing
 All to be implemented (authentication, endpoints, verification, etc.). PRs welcome!

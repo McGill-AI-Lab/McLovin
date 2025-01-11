@@ -1,8 +1,8 @@
 import torch
 import torch.nn.functional as F
 from PIL import Image
-from src.ml.image_description.config import DEVICE, MODEL_PATH
-from src.ml.image_description.models.conv_net import ConvNet
+from config import DEVICE, MODEL_PATH
+from models.conv_net import ConvNet
 
 # The textual representation of the output for [26] tensor
 VALUE_OF_ATTRIBUTES = [
@@ -55,6 +55,11 @@ def get_attributes(model, image_tensor):
 
 if __name__ == "__main__":
     model = load_model()
-    transformed_image = process_image('utils/face_generator/michael_jordan.jpg')
+    transformed_image = process_image('helpers/face_generator/suzy.jpg')
+    print(transformed_image)
+    # debug
+    #im = Image.open('helpers/face_generator/suzy.jpg')
+    #im.show()
+
     traits = get_attributes(model, transformed_image)
     print("Detected traits:", traits)

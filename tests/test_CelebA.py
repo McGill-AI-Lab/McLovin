@@ -3,7 +3,7 @@ import torch
 import os
 from dataclasses import dataclass
 from typing import List
-from src.ml.image_description.models.conv_net import ConvNet
+#from src.ml.image_description.models.conv_net import ConvNet
 from src.ml.image_description.inference import load_model, process_image, get_attributes
 from src.ml.image_description.description_generator import configure_generative_ai, generate_description
 from src.ml.image_description.config import MODEL_PATH
@@ -23,14 +23,15 @@ def model():
     return load_model(MODEL_PATH)
 
 def test_model_output_shape(model):
-    image_tensor = process_image('utils/face_generator/michael_jordan.jpg')
+    image_tensor = process_image('helpers/face_generator/suzy.jpg')
     with torch.no_grad():
         output = model(image_tensor.unsqueeze(0))
     assert output.shape == (1, 26), f"Expected output shape (1, 26), got {output.shape}"
 
 def test_detect_attributes(model):
-    image_tensor = process_image('utils/face_generator/michael_jordan.jpg')
+    image_tensor = process_image('helpers/face_generator/suzy.jpg')
     traits = get_attributes(model, image_tensor)
+    print("face traits are: ", traits)
     assert isinstance(traits, list)
     assert len(traits) > 0
 
