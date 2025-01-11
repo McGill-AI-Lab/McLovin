@@ -81,10 +81,12 @@ python pytest tests
 
 # List of API keys
 /.env should look like this:
-PINECONE_KEY= **<Fill in Your Key>**
-GEMINI_KEY= **<Fill in Your Key>**
-GOOGLE_API_KEY= **<Fill in Your Key>**
-celeba_key= **<Fill in Your Key>**
+```
+PINECONE_KEY=<YOUR-KEY>
+GEMINI_KEY=<YOUR-KEY>
+GOOGLE_API_KEY=<YOUR-KEY>
+celeba_key=<YOUR-KEY>
+```
 
 ## 📊 ML Model Details
 - **Embed** user profile data via **SBERT** (PyTorch).
