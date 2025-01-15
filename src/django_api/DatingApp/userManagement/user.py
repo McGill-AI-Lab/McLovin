@@ -11,6 +11,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 sys.path.append('../../') # assuming working dir is DatingApp (with manage.py), this adds the core directory to PATH
 
 from core.profile import UserProfile
+from ml.clustering.cluster_users import cluster_users
+
 from dataclasses import dataclass, asdict
 
 # defining a decorator to check if an user is authenticated
@@ -109,6 +111,20 @@ class User(UserProfile):
 
     def __str__(self):
         return f"MongoDB User Collection: {self.collection.name}"
+
+class Matching:
+    def __init__(self):
+        pass
+
+    def assign(self,user_id):
+        """
+        Assigns a user to a cluster
+
+        :param user_id:
+        :return:
+        """
+        #cluster_users()
+        pass
 
 
 #TODO Implement the UserManager for login and signup views
