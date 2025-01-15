@@ -43,13 +43,13 @@ def visualize_evaluation(results: Dict) -> None:
 
     fig, axes = plt.subplots(1, 3, figsize=(15, 5))
 
-    # Elbow curve
+    # elbow curve
     axes[0].plot(results['k_values'], results['inertias'], 'bo-')
     axes[0].set_xlabel('Number of clusters (k)')
     axes[0].set_ylabel('Inertia')
     axes[0].set_title('Elbow Method')
 
-    # Silhouette scores
+    # silhouette scores
     axes[1].plot(results['k_values'], results['silhouette_scores'], 'ro-')
     axes[1].set_xlabel('Number of clusters (k)')
     axes[1].set_ylabel('Silhouette Score')

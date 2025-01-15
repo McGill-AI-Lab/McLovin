@@ -87,7 +87,6 @@ Thumbs.db
 *.h5
 *.pkl
 *.model
-models/
 checkpoints/
 
 # Weaviate
@@ -119,5 +118,6 @@ node_modules/
 bower_components/
 
 # outputs
-data/
+src/ml/image_description/data/celeba/
+src/ml/image_description/models/model/model.pth
 #outputs/ uncomment if outputs get too heavy
