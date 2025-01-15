@@ -12,8 +12,8 @@ from dotenv import load_dotenv
 
 import pandas.errors
 
-LIM_DAY_API = 1300
-LIM_MIN_API = 15
+LIM_DAY_API = 1500
+API_WAIT_TIME = 4
 
 hobbies_JSON = 'helpers/ProfileGenerator/json_prompts/hobbies.json'
 phys_traits_JSON = 'helpers/ProfileGenerator/json_prompts/phys_traits.json'
@@ -228,6 +228,9 @@ if __name__ == "__main__":
 
         Jm.increment_count()
 
+        time.wait(API_WAIT_TIME)
+
+'''
         # Maximum of 15 API calls per minute
         if Jm.load_count() % LIM_MIN_API == 0 and Jm.load_count() != 0:
             elapsed_time = time.time() - start_time
@@ -235,3 +238,4 @@ if __name__ == "__main__":
             print(f"15 iterations done. Waiting {sleep_time} seconds before continuing.")
             time.sleep(sleep_time)
             start_time = time.time()
+'''
