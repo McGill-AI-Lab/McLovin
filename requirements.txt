@@ -1,17 +1,22 @@
 # Core libraries
-numpy
-torch
-transformers
-sentence-transformers
+numpy==1.25.1
+torch==2.1.0
+transformers==4.31.0
+sentence-transformers==2.2.2
+google-generativeai==0.1.0
+typing-extensions==4.8.0
 
 # Pinecone
-pinecone-client
+pinecone-client==2.2.0
 
 # Environment variables
-python-dotenv
+python-dotenv==1.0.0
 
 # Web framework
-django
+django==4.2.5
 
-# Test runner (if you want tests in your main requirements)
-pytest
+# Test runner and additional libs
+matplotlib==3.7.1
+seaborn==0.12.2
+pytest==7.4.0
+gdown==4.7.1

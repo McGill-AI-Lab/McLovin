@@ -1,21 +1,22 @@
-from src.core.bio_embedder import BioEmbedder
+from src.core.embedder import Embedder
 from src.core.profile import UserProfile, Faculty, Grade, Ethnicity
 
 def test_embeddings():
-    embedder = BioEmbedder()
+    embedder = Embedder()
 
     test_profile = UserProfile(
-        user_id="mybitch",
-        name="Test User",
-        age=20,
-        grade=Grade.U0,
-        ethnicity=[Ethnicity.WHITE],
-        faculty=Faculty.ENGINEERING,
-        major=["Software Engineering"],
-        bio="Does not HATE cats and dogs",
-        preferences= ''
+        user_id="302",
+        name="williamkiemlafond",
+        age=21,
+        grade=Grade.U2,
+        ethnicity=[Ethnicity.WHITE, Ethnicity.LATIN],
+        faculty=Faculty.ARTS,
+        major=["Design Engineering"],
+        bio="I love coding  ",
+        preferences= 'Likes korean looking girls with big bumboclats',
     )
-    embedding = embedder.process_profile(test_profile)
-    assert len(embedding) == 384
+    embedding = embedder.process_profile(test_profile) # this should save 2 records : one for bio and one for preferences
+    assert len(embedding[0]) == 384 # for bio vector
+    assert len(embedding[1]) == 384 # for pref vector
     print("Profile stored in Pinecone")
     print(test_profile.tostring())

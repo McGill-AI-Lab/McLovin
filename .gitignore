@@ -117,3 +117,7 @@ cover/
 # Dependencies
 node_modules/
 bower_components/
+
+# outputs
+data/
+#outputs/ uncomment if outputs get too heavy

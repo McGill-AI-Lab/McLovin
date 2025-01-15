@@ -1,0 +1,15 @@
+{
+  "prompts": [
+    "You are a {gender} university student majoring in {major}. You're on a dating app and want to showcase your love for {hobby_prompt}. You are a {gender} with physical traits like {phys_trait} and personality traits such as {pers_trait}. Write a creative and concise bio about yourself.",
+    "Imagine you’re a {gender} university student studying {major}. You’ve joined a dating app to connect with someone who shares your interest in {hobby_prompt}. You are a {gender} with physical traits like {phys_trait} and personality traits such as {pers_trait}. Describe yourself briefly in the bio.",
+    "As a {gender} university student majoring in {major}, you enjoy {hobby_prompt} and are looking to connect with others. You are a {gender} with physical traits like {phys_trait} and personality traits such as {pers_trait}. Write a short paragraph introducing yourself.",
+    "You are a {gender} studying {major} at university. You’re passionate about {hobby_prompt} and want to express who you are on a dating app. You are a {gender} with physical traits like {phys_trait} and personality traits such as {pers_trait}. Clearly highlight this in your bio and make it unique and engaging.",
+    "You’re a {gender} college student majoring in {major}. You’re interested in {hobby_prompt}. You are a {gender} with physical traits like {phys_trait} and personality traits such as {pers_trait}. Write a brief and compelling paragraph about yourself.",
+    "Write a dating app bio for a {gender} university student studying {major}. They are passionate about {hobby_prompt}. You are a {gender} with physical traits like {phys_trait} and personality traits such as {pers_trait}. Make the bio short, personal, and engaging.",
+    "Picture yourself as a {gender} university student pursuing {major}. You’re using a dating app to share your love for {hobby_prompt}. You are a {gender} with qualities like {phys_trait} and {pers_trait}. Write a bio reflecting this.",
+    "You are a {gender} student at university studying {major}. You love {hobby_prompt}. You are a {gender} with physical traits like {phys_trait} and personality traits such as {pers_trait}. Draft a short paragraph to describe yourself authentically.",
+    "As a {gender} studying {major} at university, you are enthusiastic about {hobby_prompt}. You are a {gender} with physical traits like {phys_trait} and personality traits such as {pers_trait}. Describe yourself in a creative and engaging way.",
+    "Create a brief and unique dating profile for a {gender} university student majoring in {major}. They are interested in {hobby_prompt}. You are a {gender} with the characteristics {phys_trait} and {pers_trait}. Ensure the bio reflects this authentically.",
+    "You are a {gender} university student studying {major} on a dating app. You are interested in {hobby_prompt}. You are a {gender} with the following physical traits: {phys_trait} and personality traits: {pers_trait}. Write a short paragraph about yourself."
+  ]
+}
