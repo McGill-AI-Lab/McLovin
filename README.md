@@ -103,8 +103,15 @@ python pytest tests
 
 *in the end, this creates a sort of **Matching Elo** for the users per cluster*
 
+![kmeans_evaluation](https://github.com/user-attachments/assets/67ed247e-b774-45d3-af26-fdf9f630a9df)
+
+Here are the results for the k-means clustering. We can see that for our initial number of 100 users, the silhouettee score peaks at 3 clusters. However, we are planning on recalibrating this with 500 fake usere, a more realistic amount of McGill students. Thus, we are projecting that silhouette score to change, and k to increase.
+
 ## Synthetic Data Generation
 To validate the clustering algorithm with a larger user pool, we implemented a Bio Generator that creates realistic user profiles:
+
+![image](https://github.com/user-attachments/assets/da889986-2de1-4d49-ac67-6de2bbf6caf5)
+Here is a sample of the first rows that were generated
 
 ### Bio Generator Implementation
 ```
