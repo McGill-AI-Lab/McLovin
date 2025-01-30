@@ -10,7 +10,7 @@ from src.ml.image_description.models.conv_net import ConvNet
 
 def train_celeba():
     train_loader = create_celeba_dataloader(split='train', batch_size=BATCH_SIZE, shuffle=True)
-    val_loader = create_celeba_dataloader(split='val', batch_size=BATCH_SIZE)  # Add validation
+    val_loader = create_celeba_dataloader(split='valid', batch_size=BATCH_SIZE)  # Add validation
 
     model = ConvNet(num_classes=26).to(DEVICE)
     criterion = nn.BCEWithLogitsLoss()

@@ -5,9 +5,9 @@ import torch
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # Hyperparameters
-LR = 0.0001
-MAX_EPOCH = 4
-BATCH_SIZE = 32
+LR = 0.001
+MAX_EPOCH = 8
+BATCH_SIZE = 16
 
 # Indices for the columns in CelebA we want to keep
 RELEVANT_ATTRIBUTES = [

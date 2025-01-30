@@ -121,3 +121,8 @@ bower_components/
 src/ml/image_description/data/celeba/
 src/ml/image_description/models/model/model.pth
 #outputs/ uncomment if outputs get too heavy
+
+#data for image description generator
+src/ml/image_description/data/*.txt
+src/ml/image_description/data/img_align_celeba
+src/ml/image_description/data/identity_CelebA.txt
