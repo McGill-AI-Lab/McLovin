@@ -28,11 +28,19 @@ def load_model(path=MODEL_PATH):
     model.eval()
     return model
 
+def center_image(im): #this may be needed so that the convolutional network works appropriately 
+    #Notes:
+    #1. Images are first roughly aligned using similarity transformation according to the two eye locations;
+    #2. Images are then resized to 218*178 --> shouldn't be needed since we are then cropping to 128 by 128
+    pass
+
 def process_image(image_path):
     im = Image.open(image_path)
     if im.mode != 'RGB':
         im = im.convert('RGB')
+
     return transform(im)
+
 
 def get_attributes(model, image_tensor):
     with torch.no_grad():
