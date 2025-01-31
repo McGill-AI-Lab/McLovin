@@ -3,6 +3,7 @@ import torch.nn.functional as F
 from PIL import Image
 from config import DEVICE, MODEL_PATH
 from models.conv_net import ConvNet
+from src.ml.image_description.Detect_Face.Boxing_Face import cropping_face
 
 # The textual representation of the output for [26] tensor
 VALUE_OF_ATTRIBUTES = [
@@ -29,10 +30,11 @@ def load_model(path=MODEL_PATH):
     return model
 
 def process_image(image_path):
-    im = Image.open(image_path)
-    if im.mode != 'RGB':
-        im = im.convert('RGB')
+    
+    im = cropping_face(image_path)
+
     return transform(im)
+
 
 def get_attributes(model, image_tensor):
     with torch.no_grad():

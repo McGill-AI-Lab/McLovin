@@ -21,6 +21,11 @@ class CustomCelebADataset(Dataset):
 
     def __len__(self):
         return len(self.dataset)
+    
+def center_images(image):
+    centered_image = image
+    return centered_image
+
 
 def get_celeba_transforms():
     """Return the Compose of transforms used for CelebA images."""
