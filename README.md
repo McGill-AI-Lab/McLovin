@@ -103,8 +103,15 @@ python pytest tests
 
 *in the end, this creates a sort of **Matching Elo** for the users per cluster*
 
+![kmeans_evaluation](https://github.com/user-attachments/assets/67ed247e-b774-45d3-af26-fdf9f630a9df)
+
+Here are the results for the k-means clustering. We can see that for our initial number of 100 users, the silhouettee score peaks at 3 clusters. However, we are planning on recalibrating this with 500 fake usere, a more realistic amount of McGill students. Thus, we are projecting that silhouette score to change, and k to increase.
+
 ## Synthetic Data Generation
 To validate the clustering algorithm with a larger user pool, we implemented a Bio Generator that creates realistic user profiles:
+
+![image](https://github.com/user-attachments/assets/da889986-2de1-4d49-ac67-6de2bbf6caf5)
+Here is a sample of the first rows that were generated
 
 ### Bio Generator Implementation
 ```
@@ -276,13 +283,31 @@ src/ml/image_description/
 All to be implemented (authentication, endpoints, verification, etc.). PRs welcome!
 
 ## 🎯 Roadmap
-- [ ] Basic matching algorithm
-- [ ] User authentication
+- [x] Basic matching algorithm
+- [x] User authentication
+- [x] Personalized matching with CNN
+- [x] Profile verification
 - [ ] Chat system
-- [ ] Profile verification
-- [ ] Event matching
-- [ ] Recommendation system
 - [ ] Mobile app
+
+## 🔒 Privacy & Data Disclaimer
+
+**Data Collection & Usage**  
+- **Consent:** By using McLovin, users agree to allow the application to process their personal information (e.g., profile data, images) for matchmaking purposes.  
+- **Image Processing:** Any face recognition or attribute detection is done in a secure environment, and images are not stored permanently without explicit consent.  
+- **Anonymization:** Collected data (profile preferences, embeddings, etc.) is aggregated and anonymized where possible to protect individual identities.  
+- **User Control:** Users can request profile deletion or opt out of image-based matching at any time.  
+
+**Security & Compliance**  
+- **Limited Access:** Only authorized contributors have access to sensitive data. Credentials and API keys are kept in `.env` files and are not committed to the repository.  
+- **No Third-Party Sharing:** McLovin does not sell or share personal data with advertisers or external parties.  
+- **Research & Improvements:** Data may be used internally to improve algorithms, but solely in anonymized form.  
+
+**Potential Biases**  
+- **Model Limitations:** Our AI models (including CNNs and clustering) may reflect biases present in training datasets (e.g., CelebA). We continuously refine our models to mitigate such biases.  
+
+> **Disclaimer:** This is a non-commercial, student-run project aimed at research and learning purposes. Use at your own discretion.
+
 
 ## 📄 License
 MIT License - see [LICENSE](LICENSE) for details.
