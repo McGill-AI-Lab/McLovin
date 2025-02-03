@@ -1,19 +1,18 @@
 from pymongo import MongoClient
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from functools import wraps
 from django.http import JsonResponse
 from django.shortcuts import redirect
+from dataclasses import dataclass, fields
 import sys
 from pymongo import MongoClient
 from bson.objectid import ObjectId
-from datetime import datetime
-from django.utils.crypto import get_random_string
-from django.core.mail import send_mail
 from werkzeug.security import generate_password_hash, check_password_hash
 
 sys.path.append('../../') # assuming working dir is DatingApp (with manage.py), this adds the core directory to PATH
 
 from core.profile import UserProfile
+from ml.clustering.cluster_users import cluster_users
+
 from dataclasses import dataclass, asdict
 
 # defining a decorator to check if an user is authenticated
@@ -47,7 +46,6 @@ users_collection = db["users"]
 #"mongodb://localhost:27017/"
 
 # this app was specifically made to test the database interactions of Django with the mongodb DB
-@dataclass
 class User(UserProfile):
     """A custom User class for MongoDB interaction using pymongo."""
 
@@ -55,6 +53,7 @@ class User(UserProfile):
         self.client = MongoClient(db_uri)
         self.db = self.client[db_name]
         self.collection = self.db[collection_name]
+        self._to_dict_with_defaults()
 
     def create_user(self,user_data:dict):
         """
@@ -100,11 +99,32 @@ class User(UserProfile):
         """Deletes a user from the database."""
         return self.collection.delete_one({"_id": ObjectId(user_id)})
 
-    def to_dict(self):
-        return asdict(self) # function that returns a dict : very useful for mongoDB implementation
+    def _to_dict_with_defaults(self):
+        type_defaults = {str: "", int: 0, float: 0.0, bool: False}
+        return {field.name: type_defaults.get(field.type, None) for field in fields(self)}
+    # initialize the dictionnary from the profile dataclass
+
+    def perform_matchmaking(self,user_id):
+        """
+        # assigns cluster, gets a match
+        """
 
     def __str__(self):
         return f"MongoDB User Collection: {self.collection.name}"
+
+class Matching:
+    def __init__(self):
+        pass
+
+    def assign(self,user_id):
+        """
+        Assigns a user to a cluster
+
+        :param user_id:
+        :return:
+        """
+        #cluster_users()
+        pass
 
 
 #TODO Implement the UserManager for login and signup views
