@@ -103,7 +103,7 @@ def main():
     all_bio_records = index.query(
         vector=[float(0)] * 384,
         namespace='bio-embeddings',
-        filter={},
+        filter={}, # filter={"fake": {"$ne": True}} if we excluding fake profiles
         top_k=1000,
         include_values=True
     )
@@ -115,14 +115,9 @@ def main():
     scaler = StandardScaler()
     embeddings_normalized = scaler.fit_transform(embeddings)
 
-    # Split data for validation
-    train_embeddings, val_embeddings = train_test_split(
-        embeddings_normalized, test_size=0.2, random_state=42
-    )
-
-    # Evaluate different k values
+    # evaluate different k values
     print("Evaluating different numbers of clusters...")
-    results = evaluate_kmeans(train_embeddings)
+    results = evaluate_kmeans(embeddings_normalized)
     visualize_evaluation(results)
 
     # Find optimal k using silhouette score
@@ -131,27 +126,20 @@ def main():
 
     # Final clustering with optimal k
     kmeans = KMeans(n_clusters=optimal_k, random_state=42,n_init='auto')
-    train_labels = kmeans.fit_predict(train_embeddings)
-    val_labels = kmeans.predict(val_embeddings)
+    all_labels = kmeans.fit_predict(embeddings_normalized)
 
     # Analyze clusters
-    train_stats = analyze_clusters(train_embeddings, train_labels)
-    val_stats = analyze_clusters(val_embeddings, val_labels)
+    cluster_stats = analyze_clusters(embeddings_normalized, all_labels)
+
     print("\n------------------------------------------------------------------")
     print("\nTraining Set Cluster Analysis:")
-    for cluster_id, stats in train_stats.items():
+    for cluster_id, stats in cluster_stats.items():
         print(f"\n{cluster_id}:")
         print(f"Size: {stats['size']} ({stats['percentage']:.1f}%)")
         print(f"Mean distance to center: {stats['mean_distance_to_center']:.3f}")
         print(f"Density: {stats['density']:.3f}")
 
     print("\n------------------------------------------------------------------")
-    print("\nValidation Set Cluster Analysis:")
-    for cluster_id, stats in val_stats.items():
-        print(f"\n{cluster_id}:")
-        print(f"Size: {stats['size']} ({stats['percentage']:.1f}%)")
-        print(f"Mean distance to center: {stats['mean_distance_to_center']:.3f}")
-        print(f"Density: {stats['density']:.3f}")
 
 if __name__ == "__main__":
     main()
