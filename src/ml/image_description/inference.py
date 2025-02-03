@@ -30,7 +30,7 @@ def load_model(path=MODEL_PATH):
     return model
 
 def process_image(image_path):
-    
+
     im = cropping_face(image_path)
 
     return transform(im)

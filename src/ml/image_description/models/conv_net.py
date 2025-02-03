@@ -17,7 +17,7 @@ class ConvNet(nn.Module):
             nn.MaxPool2d(2, 2), #256, 14, 14
             nn.BatchNorm2d(256),
 
-            nn.Conv2d(256, 384, 3, padding=1), #384, 12, 12 
+            nn.Conv2d(256, 384, 3, padding=1), #384, 12, 12
             nn.ReLU(inplace=True),
             nn.Conv2d(384, 384, 3, padding=1), #384, 10, 10
             nn.ReLU(inplace=True),

@@ -21,10 +21,10 @@ def train_celeba():
     best_val_loss = float('inf')
     patience_counter = 0
     max_patience = 5  # Early stopping
-    
+
     for epoch in range(MAX_EPOCH):
         # Training
-        
+
         model.train()
         train_loss = 0
         for i, (images, labels) in enumerate(train_loader):

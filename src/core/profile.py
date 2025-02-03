@@ -46,6 +46,7 @@ class UserProfile:
     bio: str
     preferences: str
     cluster_id: int
+    fake: bool
 
     def __init__(self, user_id, name, age, grade, ethnicity, faculty, major, bio, preferences=''):
         # all these fields must be instantiated
@@ -58,6 +59,7 @@ class UserProfile:
         self.major = major
         self.bio = bio
         self.preferences = preferences
+        self.fake = False # put False once we onboard synthethic data
 
         # except for cluster
         self.cluster_id = -1 # cluster is initialized as None before clustering
@@ -74,6 +76,7 @@ class UserProfile:
             f"bio: {self.bio}, "
             f"preferences: {self.preferences},"
             f"cluster_id: {self.cluster_id} "
+            f"fake: {self.fake}"
         )
 
 
