@@ -34,6 +34,47 @@ def setup_logging():
     )
     return log_filename
 
+def find_optimal_k(results: Dict) -> int:
+    """
+    Find optimal k using Calinski-Harabasz score and elbow method
+    """
+    # Using Calinski-Harabasz score (higher is better)
+    calinski_scores = results['calinski_scores']
+    optimal_k_calinski = results['k_values'][np.argmax(calinski_scores)]
+
+    # Using elbow method
+    inertias = results['inertias']
+    k_values = results['k_values']
+
+    # Calculate the elbow point using the maximum curvature method
+    # Calculate the angle of the curve at each point
+    angles = []
+    for i in range(1, len(k_values)-1):
+        point1 = np.array([k_values[i-1], inertias[i-1]])
+        point2 = np.array([k_values[i], inertias[i]])
+        point3 = np.array([k_values[i+1], inertias[i+1]])
+
+        # Vectors from point2 to point1 and point3
+        vector1 = point1 - point2
+        vector2 = point3 - point2
+
+        # Normalize vectors
+        vector1_normalized = vector1 / np.linalg.norm(vector1)
+        vector2_normalized = vector2 / np.linalg.norm(vector2)
+
+        # Calculate angle
+        angle = np.arccos(np.clip(np.dot(vector1_normalized, vector2_normalized), -1.0, 1.0))
+        angles.append(angle)
+
+    optimal_k_elbow = k_values[np.argmax(angles) + 1]
+
+    # Log the findings
+    logging.info(f"Optimal k based on Calinski-Harabasz score: {optimal_k_calinski}")
+    logging.info(f"Optimal k based on elbow method: {optimal_k_elbow}")
+
+    # Use Calinski-Harabasz score as the primary metric
+    return optimal_k_calinski
+
 def save_results_json(results: Dict, stats: Dict):
     """Save evaluation results to JSON file"""
     output_dir = 'outputs'
@@ -64,7 +105,7 @@ def save_results_json(results: Dict, stats: Dict):
 
     return output_file
 
-def evaluate_kmeans(embeddings: np.ndarray, k_range: range = range(2, 11)) -> Dict:
+def evaluate_kmeans(embeddings: np.ndarray, k_range: range = range(4, 21)) -> Dict:
     """
     Evaluate KMeans clustering for different values of k.
     """
@@ -159,9 +200,15 @@ def main():
     results = evaluate_kmeans(embeddings_normalized)
     visualize_evaluation(results)
 
+    # COMMENTED OUT BCZ SILHOUETTE SCORE IS TOO VOLATILE
     # Find optimal k using silhouette score
-    optimal_k = results['k_values'][np.argmax(results['silhouette_scores'])]
-    logging.info(f"Optimal number of clusters based on silhouette score: {optimal_k}")
+    #optimal_k = results['k_values'][np.argmax(results['silhouette_scores'])]
+    #logging.info(f"Optimal number of clusters based on silhouette score: {optimal_k}")
+
+    # USE FIND OPTIMAL (BASED ON CALINSKI INSTEAD)
+    # Find optimal k using the new method
+    optimal_k = find_optimal_k(results)
+    logging.info(f"Selected optimal number of clusters: {optimal_k}")
 
     # Final clustering with optimal k
     kmeans = KMeans(n_clusters=optimal_k, random_state=42, n_init='auto')
