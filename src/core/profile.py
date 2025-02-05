@@ -54,6 +54,7 @@ class UserProfile:
     preferences: str
     cluster_id: int
     fake: bool
+    matches: List['UserProfile']
 
     def __init__(self, user_id, name, age, grade, ethnicity, faculty, major, bio, preferences=''):
         # all these fields must be instantiated
@@ -67,6 +68,7 @@ class UserProfile:
         self.bio = bio
         self.preferences = preferences
         self.fake = False # put False once we onboard synthethic data
+        self.matches = [] # starts empty and gets heapadded by their match_score
 
         # except for cluster
         self.cluster_id = -1 # cluster is initialized as None before clustering
