@@ -2,7 +2,7 @@ import pandas as pd
 from pinecone import Pinecone
 import os
 from dotenv import load_dotenv
-from src.core.embedder import Embedder  # Replace with your embedder
+from src.core.embedder import Embedder
 
 load_dotenv(dotenv_path='.env')
 
@@ -18,27 +18,50 @@ def onboard_fake_profiles(csv_path: str, index_name: str = "matching-index"):
     embedder = Embedder()
 
     # Process each profile
-    for _, row in df.iterrows():
+    for i, row in df.iterrows():
         # Generate embeddings for bio and preferences
-        bio_embedding = embedder.process_profile(row['bio'])
-        pref_embedding = embedder.process_profile(row['preferences'])
+        #print("bio is:", row['bios'])
+        bio_embedding = embedder.embed_text(row['bios'])
+        pref_embedding = embedder.embed_text('')
+
+        # create a common metadata
+        common_metadata = {
+            'gender':row['gender'],
+            'major': row['major'],
+            'bio': row['bios'],
+            'preferences': "none for now",
+            'cluster_': -1,
+        }
+
+        bio_record = {
+            "id": f"user_{i}",
+            "values": bio_embedding,
+            "metadata": {
+                **common_metadata,
+                'type_of_vector': 'bio',
+                'fake': True,
+            }
+        }
+
+        pref_record = {
+            "id": f"user_{i}",
+            "values": pref_embedding,
+            "metadata": {
+                **common_metadata,
+                'type_of_vector': 'preferences',
+                'fake': True,
+            }
+        }
 
         # Upsert to Pinecone with metadata
         index.upsert(
-            vectors=[
-                {
-                    "id": row['user_id'],
-                    "values": bio_embedding,
-                    "metadata": {"fake": True, "type": "bio"}
-                },
-                {
-                    "id": f"{row['user_id']}_preferences",
-                    "values": pref_embedding,
-                    "metadata": {"fake": True, "type": "preferences"}
-                }
-            ],
+            vectors=[bio_record],
             namespace="bio-embeddings"
+        )
+        index.upsert(
+            vectors = [pref_record],
+            namespace='preferences-embeddings'
         )
 
 if __name__ == "__main__":
-    onboard_fake_profiles("path/to/fake_profiles.csv")
+    onboard_fake_profiles("outputs/profiles.csv")

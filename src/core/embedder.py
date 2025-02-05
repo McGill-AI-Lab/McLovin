@@ -4,7 +4,7 @@ from pinecone import Pinecone, ServerlessSpec
 import os
 import time
 from dotenv import load_dotenv
-from src.core.embedder import Embedder
+#from src.core.embedder import Embedder
 from src.core.profile import UserProfile, Faculty, Grade, Ethnicity
 
 
@@ -72,9 +72,11 @@ class Embedder:
             'faculty': profile.faculty.value,  # enum faculty
             'ethnicity': [str(e.value) for e in profile.ethnicity],  # list of enum ethnicities
             'major': profile.major,  # List of Strings
+            'gender':profile.gender,
             'bio': profile.bio,
             'preferences': profile.preferences,
             'cluster_': profile.cluster_id,
+            'fake': profile.fake,
         }
 
         bio_record = {

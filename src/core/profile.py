@@ -33,6 +33,12 @@ class Ethnicity(Enum):
     MIDDLE_EASTERN = 6
     INDIGENOUS = 7
 
+class Gender(Enum):
+    MAN = 0
+    WOMAN = 1
+    NONBINARY = 2
+    OTHER = 3
+
 
 @dataclass
 class UserProfile:
@@ -40,6 +46,7 @@ class UserProfile:
     name: str # not important for encoding
     age: int
     grade: Grade
+    gender: Gender
     ethnicity: List[Ethnicity]
     faculty: Faculty
     major: List[str]

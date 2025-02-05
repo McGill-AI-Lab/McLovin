@@ -1,10 +1,12 @@
 # Core libraries
-numpy==1.25.1
+numpy==1.24.3
 torch==2.1.0
 transformers==4.31.0
 sentence-transformers==2.2.2
 google-generativeai==0.1.0
 typing-extensions==4.8.0
+huggingface_hub==0.14.1
+
 
 # Pinecone
 pinecone-client==2.2.0
