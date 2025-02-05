@@ -1,4 +1,5 @@
 from pinecone import Pinecone
+from typing import Dict, Tuple
 import os
 from dotenv import load_dotenv
 from cluster_users import cluster_users, analyze_clusters
@@ -7,6 +8,7 @@ import logging
 from datetime import datetime
 import numpy as np
 from sklearn.preprocessing import StandardScaler
+import matplotlib.pyplot as plt
 
 def setup_logging():
     output_dir = 'outputs'
@@ -24,6 +26,44 @@ def setup_logging():
         ]
     )
     return log_filename
+
+def visualize_evaluation(results: Dict, optimal_k: int) -> None:
+    """Plot evaluation metrics and mark optimal k."""
+    output_dir = 'outputs'
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+
+    fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+
+    # elbow curve
+    axes[0].plot(results['k_values'], results['inertias'], 'bo-')
+    axes[0].axvline(x=optimal_k, color='r', linestyle='--', alpha=0.5)
+    axes[0].set_xlabel('Number of clusters (k)')
+    axes[0].set_ylabel('Inertia')
+    axes[0].set_title('Elbow Method')
+
+    # silhouette scores
+    axes[1].plot(results['k_values'], results['silhouette_scores'], 'ro-')
+    axes[1].axvline(x=optimal_k, color='r', linestyle='--', alpha=0.5)
+    axes[1].set_xlabel('Number of clusters (k)')
+    axes[1].set_ylabel('Silhouette Score')
+    axes[1].set_title('Silhouette Analysis')
+
+    # Calinski-Harabasz scores
+    axes[2].plot(results['k_values'], results['calinski_scores'], 'go-')
+    axes[2].axvline(x=optimal_k, color='r', linestyle='--', alpha=0.5)
+    axes[2].set_xlabel('Number of clusters (k)')
+    axes[2].set_ylabel('Calinski-Harabasz Score')
+    axes[2].set_title('Calinski-Harabasz Index')
+
+    # Add a title showing the optimal k
+    fig.suptitle(f'Clustering Evaluation Metrics (Optimal k={optimal_k})', fontsize=12)
+
+    plt.tight_layout()
+    output_file = os.path.join(output_dir, f'kmeans_evaluation_{timestamp}.png')
+    plt.savefig(output_file)
+    plt.close()
+
+    logging.info(f"Saved evaluation plots to {output_file}")
 
 def update_cluster_assignments(index, user_ids, cluster_assignments):
     """
@@ -63,10 +103,8 @@ if __name__ == "__main__":
     log_file = setup_logging()
     logging.info("Starting clustering process")
 
-    # Load environment variables
+    # Load environment variables and initialize Pinecone
     load_dotenv(dotenv_path='.env')
-
-    # Initialize Pinecone
     logging.info("Initializing Pinecone connection")
     pc = Pinecone(api_key=os.getenv("PINECONE_KEY"))
     index = pc.Index(host="https://matching-index-goovj0m.svc.aped-4627-b74a.pinecone.io")
@@ -99,6 +137,9 @@ if __name__ == "__main__":
     results = evaluate_kmeans(embeddings_normalized)
     optimal_k = find_optimal_k(results)
     logging.info(f"Selected optimal number of clusters: {optimal_k}")
+
+    # Visualize evaluation metrics with optimal k
+    visualize_evaluation(results, optimal_k)
 
     # Perform clustering with optimal k
     logging.info(f"Performing final clustering with k={optimal_k}...")
