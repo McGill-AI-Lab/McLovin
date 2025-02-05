@@ -34,46 +34,53 @@ def setup_logging():
     )
     return log_filename
 
-def find_optimal_k(results: Dict) -> int:
+def find_optimal_k(results: Dict) -> Tuple[int, Dict]:
     """
-    Find optimal k using Calinski-Harabasz score and elbow method
+    Find optimal k using silhouette score as primary metric, but track all metrics
     """
-    # Using Calinski-Harabasz score (higher is better)
+    # Get all scores
+    silhouette_scores = results['silhouette_scores']
     calinski_scores = results['calinski_scores']
-    optimal_k_calinski = results['k_values'][np.argmax(calinski_scores)]
-
-    # Using elbow method
     inertias = results['inertias']
     k_values = results['k_values']
 
-    # Calculate the elbow point using the maximum curvature method
-    # Calculate the angle of the curve at each point
+    # Find optimal k using silhouette score (higher is better)
+    optimal_k_silhouette = k_values[np.argmax(silhouette_scores)]
+
+    # Calculate other metrics for logging purposes
+    optimal_k_calinski = k_values[np.argmax(calinski_scores)]
+
+    # Calculate elbow point
     angles = []
     for i in range(1, len(k_values)-1):
         point1 = np.array([k_values[i-1], inertias[i-1]])
         point2 = np.array([k_values[i], inertias[i]])
         point3 = np.array([k_values[i+1], inertias[i+1]])
 
-        # Vectors from point2 to point1 and point3
         vector1 = point1 - point2
         vector2 = point3 - point2
 
-        # Normalize vectors
         vector1_normalized = vector1 / np.linalg.norm(vector1)
         vector2_normalized = vector2 / np.linalg.norm(vector2)
 
-        # Calculate angle
         angle = np.arccos(np.clip(np.dot(vector1_normalized, vector2_normalized), -1.0, 1.0))
         angles.append(angle)
 
     optimal_k_elbow = k_values[np.argmax(angles) + 1]
 
-    # Log the findings
+    # Log all metrics
+    metrics = {
+        'silhouette': optimal_k_silhouette,
+        'calinski': optimal_k_calinski,
+        'elbow': optimal_k_elbow
+    }
+
+    logging.info(f"Optimal k based on silhouette score: {optimal_k_silhouette}")
     logging.info(f"Optimal k based on Calinski-Harabasz score: {optimal_k_calinski}")
     logging.info(f"Optimal k based on elbow method: {optimal_k_elbow}")
 
-    # Use Calinski-Harabasz score as the primary metric
-    return optimal_k_calinski
+    # Return silhouette-based k and all metrics
+    return optimal_k_silhouette, metrics
 
 def save_results_json(results: Dict, stats: Dict):
     """Save evaluation results to JSON file"""
@@ -135,8 +142,8 @@ def evaluate_kmeans(embeddings: np.ndarray, k_range: range = range(4, 21)) -> Di
 
     return results
 
-def visualize_evaluation(results: Dict) -> None:
-    """Plot evaluation metrics."""
+def visualize_evaluation(results: Dict, optimal_k: int) -> None:
+    """Plot evaluation metrics and mark optimal k."""
     output_dir = 'outputs'
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
 
@@ -144,21 +151,27 @@ def visualize_evaluation(results: Dict) -> None:
 
     # elbow curve
     axes[0].plot(results['k_values'], results['inertias'], 'bo-')
+    axes[0].axvline(x=optimal_k, color='r', linestyle='--', alpha=0.5)
     axes[0].set_xlabel('Number of clusters (k)')
     axes[0].set_ylabel('Inertia')
     axes[0].set_title('Elbow Method')
 
     # silhouette scores
     axes[1].plot(results['k_values'], results['silhouette_scores'], 'ro-')
+    axes[1].axvline(x=optimal_k, color='r', linestyle='--', alpha=0.5)
     axes[1].set_xlabel('Number of clusters (k)')
     axes[1].set_ylabel('Silhouette Score')
     axes[1].set_title('Silhouette Analysis')
 
     # Calinski-Harabasz scores
     axes[2].plot(results['k_values'], results['calinski_scores'], 'go-')
+    axes[2].axvline(x=optimal_k, color='r', linestyle='--', alpha=0.5)
     axes[2].set_xlabel('Number of clusters (k)')
     axes[2].set_ylabel('Calinski-Harabasz Score')
     axes[2].set_title('Calinski-Harabasz Index')
+
+    # Add a title showing the optimal k
+    fig.suptitle(f'Clustering Evaluation Metrics (Optimal k={optimal_k})', fontsize=12)
 
     plt.tight_layout()
     output_file = os.path.join(output_dir, f'kmeans_evaluation_{timestamp}.png')
@@ -166,6 +179,7 @@ def visualize_evaluation(results: Dict) -> None:
     plt.close()
 
     logging.info(f"Saved evaluation plots to {output_file}")
+
 
 def main():
     # Setup logging
@@ -200,15 +214,16 @@ def main():
     results = evaluate_kmeans(embeddings_normalized)
     visualize_evaluation(results)
 
-    # COMMENTED OUT BCZ SILHOUETTE SCORE IS TOO VOLATILE
-    # Find optimal k using silhouette score
-    #optimal_k = results['k_values'][np.argmax(results['silhouette_scores'])]
-    #logging.info(f"Optimal number of clusters based on silhouette score: {optimal_k}")
+    # Get optimal k and all metrics
+    optimal_k, all_metrics = find_optimal_k(results)
+    logging.info(f"Selected optimal number of clusters (based on silhouette): {optimal_k}")
 
-    # USE FIND OPTIMAL (BASED ON CALINSKI INSTEAD)
-    # Find optimal k using the new method
-    optimal_k = find_optimal_k(results)
-    logging.info(f"Selected optimal number of clusters: {optimal_k}")
+    # Log comparison of different methods
+    logging.info("\nComparison of different methods:")
+    for method, k in all_metrics.items():
+        logging.info(f"{method.capitalize()} method suggests k={k}")
+
+    visualize_evaluation(results, optimal_k)  # Make sure this shows all metrics
 
     # Final clustering with optimal k
     kmeans = KMeans(n_clusters=optimal_k, random_state=42, n_init='auto')

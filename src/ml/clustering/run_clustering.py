@@ -135,8 +135,12 @@ if __name__ == "__main__":
     # Evaluate to find optimal k
     logging.info("Evaluating optimal number of clusters...")
     results = evaluate_kmeans(embeddings_normalized)
-    optimal_k = find_optimal_k(results)
-    logging.info(f"Selected optimal number of clusters: {optimal_k}")
+    optimal_k, all_metrics = find_optimal_k(results)
+
+    logging.info(f"Selected optimal number of clusters (silhouette score): {optimal_k}")
+    logging.info("\nComparison of different methods:")
+    for method, k in all_metrics.items():
+        logging.info(f"{method.capitalize()} method suggests k={k}")
 
     # Visualize evaluation metrics with optimal k
     visualize_evaluation(results, optimal_k)
