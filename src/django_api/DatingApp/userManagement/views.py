@@ -7,12 +7,16 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect
 import json
 import bcrypt
+from .user import User
 
 from dotenv import dotenv_values, find_dotenv,load_dotenv
 
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from bson import ObjectId
+import sys
+sys.path.append('../../')
+from core.profile import UserProfile
 
 config_path = find_dotenv("config.env")
 config = dotenv_values(dotenv_path=config_path) # returns a dictionnary of dotenv values
@@ -113,31 +117,57 @@ def restricted_view(request):
 
 @login_required
 def user_dashboard(request, user_id):
-    # Retrieve user profile
-    #user_profile = get_object_or_404(UserProfile, user_id=user_id)
     user_profile = users_collection.find_one({"_id": ObjectId(user_id)})
 
     if not user_profile:
         messages.error(request, 'User profile not found.')
         return redirect('home')
 
+    # Get default values from the User class
+    default_values = User().to_dict_with_defaults()
+    default_values.pop("user_id", None) # the user id is set on the server side
+    default_values.pop("cluser_id", None)  # the user id is set on the server side
+
     if request.method == 'POST':
         if 'edit' in request.POST:
-            # Update the fields provided by the POST request
+            # Merge user input with existing profile, ensuring defaults for missing fields
             updated_data = {
-                'username': request.POST.get('name', user_profile.get('name', '')),
-                'age': int(request.POST.get('age', user_profile.get('age', 0))),
-                'grade': request.POST.get('grade', user_profile.get('grade', '')),
-                'ethnicity': request.POST.getlist('ethnicity') or user_profile.get('ethnicity', []),
-                'faculty': request.POST.get('faculty', user_profile.get('faculty', '')),
-                'major': request.POST.getlist('major') or user_profile.get('major', []),
-                'bio': request.POST.get('bio', user_profile.get('bio', '')),
-                'preferences': request.POST.get('preferences', user_profile.get('preferences', '')),
+                field: request.POST.get(field, user_profile.get(field, default_values[field]))
+                for field in default_values
             }
 
             # Update the user profile in MongoDB
             mongo_db.users.update_one({'_id': ObjectId(user_id)}, {'$set': updated_data})
             messages.success(request, 'Profile updated successfully!')
+
+            # Now check if the User has complete data, and if so perform embedding on his profile
+            incomplete = False
+            for field,value in updated_data.items():
+                if not value:
+                    #messages.error(request, f'Please fill in the {field} field.')
+                    #return redirect('user_dashboard', user_id=user_id)
+                    incomplete = True
+
+            if not incomplete:
+
+                data = User().get_user_by_id(user_id)
+
+                # DEBUGGING
+                data.pop("_id", None) # remove the id from the data
+                data.pop("username", None)
+                data.pop("email", None)
+                data.pop("password", None)
+                data.pop("cluster_id", None)
+
+                data["user_id"] =4948485875 # insert the user_id at the beginning of the list
+
+                user_collection = UserProfile(**data)
+                # create a UserProfile instance to perform the embedding
+                User().embed(user_collection)
+
+                print("User has been successfully embedded !")
+
+
             return redirect('user_dashboard', user_id=user_id)
 
         elif 'delete' in request.POST:
@@ -146,7 +176,11 @@ def user_dashboard(request, user_id):
             messages.success(request, 'Profile deleted successfully!')
             return redirect('logout')
 
+    # Merge stored user profile with default values
+    merged_profile = {field: user_profile.get(field, default_values[field]) for field in default_values}
+
     context = {
-        'user_profile': user_profile,
+        'user_profile': merged_profile,
     }
+
     return render(request, 'dashboard.html', context)
