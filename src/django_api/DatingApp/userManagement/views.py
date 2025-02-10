@@ -162,7 +162,9 @@ def user_dashboard(request, user_id):
                 return None  # Return None if the grade_value is not found
 
             for to_translate in 'grade','faculty','ethnicity':
+                #print(map(dic[to_translate], updated_data[to_translate]).value) would print smt like Grade.U0
                 updated_data[to_translate] = map(dic[to_translate], updated_data[to_translate])
+
 
             print(updated_data)
 
@@ -188,6 +190,8 @@ def user_dashboard(request, user_id):
                 data["user_id"] =4948485875 # insert the user_id at the beginning of the list
 
                 user_collection = UserProfile(**data)
+
+                print(user_collection.tostring())
                 # create a UserProfile instance to perform the embedding
                 User().embed(user_collection)
 

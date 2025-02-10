@@ -128,7 +128,6 @@ class User(UserProfile):
         # use _to_dict_with_defaults first to send to the frontend
         embedder = Embedder()
         # get the user's dictionnary of data from the MongoDB database
-        print(print(user_collection.tostring()))
         # create a UserProfile object from the dictionary
         embedding = embedder.process_profile(user_collection)
         print("Profile stored in Pinecone")
