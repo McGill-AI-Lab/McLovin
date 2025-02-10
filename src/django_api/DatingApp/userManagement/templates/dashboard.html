@@ -1,14 +1,23 @@
-<!DOCTYPE html>
-<html lang="en">
 {% extends 'base.html' %}
 {% load static %}
+{% load custom_filters %}
+
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Dashboard</title>
-    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'DatingApp/css/dashboard.css'%}">
 </head>
+
 {% block content %}
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard</title>
+    <link rel="stylesheet" href="{% static 'DatingApp/css/dashboard.css'%}">
+</head>
 <body>
 <div class="container">
     <h1>Welcome to Your Dashboard</h1>
@@ -27,13 +36,25 @@
         <form method="post">
             {% csrf_token %}
 
-            {% for field, value in user_profile.items %}
-                <label for="{{ field }}">{{ field|title }}:</label>
-                {% if field in textarea_fields %}
-                    <textarea name="{{ field }}" id="{{ field }}" rows="4">{{ value }}</textarea>
-                {% else %}
-                    <input type="text" name="{{ field }}" id="{{ field }}" value="{{ value }}">
-                {% endif %}
+            <!-- Dynamic Form Fields -->
+            {% for field, value in default_info.items %}
+                <div class="form-field">
+                    <label for="{{ field }}">{{ field|title }}:</label>
+                    {% if value is None or value == '' %}
+                        <!-- Render a textarea for empty strings or None -->
+                        <textarea id="{{ field }}" name="{{ field }}" rows="3">{{ user_profile|get:field|default:"" }}</textarea>
+                    {% elif value|is_list %}
+                        <!-- Render a dropdown for list values -->
+                        <select id="{{ field }}" name="{{ field }}">
+                            {% for option in value %}
+                                <option value="{{ option }}" {% if user_profile|get:field == option %}selected{% endif %}>{{ option }}</option>
+                            {% endfor %}
+                        </select>
+                    {% else %}
+                        <!-- Render a text input for other types -->
+                        <input type="text" id="{{ field }}" name="{{ field }}" value="{{ user_profile|get:field|default:value }}">
+                    {% endif %}
+                </div>
             {% endfor %}
 
             <button type="submit" class="save" name="edit">Save Changes</button>

@@ -16,7 +16,7 @@ from django.contrib import messages
 from bson import ObjectId
 import sys
 sys.path.append('../../')
-from core.profile import UserProfile
+from core.profile import UserProfile, Grade,Ethnicity,Faculty
 
 config_path = find_dotenv("config.env")
 config = dotenv_values(dotenv_path=config_path) # returns a dictionnary of dotenv values
@@ -51,7 +51,6 @@ def login_user(request):
         # Pass the `next` parameter to the template for inclusion in the form
         next_url = request.GET.get("next", "/")
         return render(request, "login.html", {"next": next_url})
-
 
 @api_view(['GET', 'POST'])
 @login_required
@@ -115,6 +114,17 @@ def signup_user(request):
 def restricted_view(request):
     return render(request,"restricted.html")
 
+def get_paremeters():
+    dic = {}
+    for enum in Grade, Faculty, Ethnicity:
+        dic[str(enum.__name__).lower()] = [e.name for e in enum]
+    initials = User().to_dict_with_defaults()
+    for key,value in initials.items():
+        if key in dic:
+            initials[key] = dic[key]
+    print(initials)
+    return initials
+
 @login_required
 def user_dashboard(request, user_id):
     user_profile = users_collection.find_one({"_id": ObjectId(user_id)})
@@ -136,9 +146,25 @@ def user_dashboard(request, user_id):
                 for field in default_values
             }
 
+            dic = {}
+            for enum in Grade, Faculty, Ethnicity:
+                dic[str(enum.__name__).lower()] = [{e.name:e} for e in enum]
+
             # Update the user profile in MongoDB
             mongo_db.users.update_one({'_id': ObjectId(user_id)}, {'$set': updated_data})
             messages.success(request, 'Profile updated successfully!')
+
+            # now perform conversion to inject into the pinecone database
+            def map(grade_list, grade_value):
+                for grade_dict in grade_list:
+                    if grade_value in grade_dict:
+                        return grade_dict[grade_value]
+                return None  # Return None if the grade_value is not found
+
+            for to_translate in 'grade','faculty','ethnicity':
+                updated_data[to_translate] = map(dic[to_translate], updated_data[to_translate])
+
+            print(updated_data)
 
             # Now check if the User has complete data, and if so perform embedding on his profile
             incomplete = False
@@ -167,7 +193,6 @@ def user_dashboard(request, user_id):
 
                 print("User has been successfully embedded !")
 
-
             return redirect('user_dashboard', user_id=user_id)
 
         elif 'delete' in request.POST:
@@ -177,10 +202,11 @@ def user_dashboard(request, user_id):
             return redirect('logout')
 
     # Merge stored user profile with default values
+
     merged_profile = {field: user_profile.get(field, default_values[field]) for field in default_values}
 
     context = {
         'user_profile': merged_profile,
+        'default_info':get_paremeters(),
     }
-
     return render(request, 'dashboard.html', context)

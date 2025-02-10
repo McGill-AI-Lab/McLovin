@@ -10,7 +10,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 sys.path.append('../../') # assuming working dir is DatingApp (with manage.py), this adds the core directory to PATH
 
-from core.profile import UserProfile
+from core.profile import UserProfile,Grade, Faculty,Ethnicity
 from ml.clustering.cluster_users import cluster_users
 from core.embedder import Embedder
 
@@ -104,6 +104,12 @@ class User(UserProfile):
         type_defaults = {str: "", int: 0, float: 0.0, bool: False}
         return {field.name: type_defaults.get(field.type, None) for field in fields(self)}
     # initialize the dictionnary from the profile dataclass
+
+    def get_enum_options(self):
+        dico = {}
+        for enum in Grade,Faculty,Ethnicity:
+            dico[enum.__name__] = [e.name for e in enum]
+        return dico
 
     def perform_matchmaking(self,user_id):
         """
