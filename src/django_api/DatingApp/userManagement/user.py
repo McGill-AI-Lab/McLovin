@@ -10,8 +10,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 sys.path.append('../../') # assuming working dir is DatingApp (with manage.py), this adds the core directory to PATH
 
-from core.profile import UserProfile
+from core.profile import UserProfile,Grade, Faculty,Ethnicity
 from ml.clustering.cluster_users import cluster_users
+from core.embedder import Embedder
 
 from dataclasses import dataclass, asdict
 
@@ -53,7 +54,7 @@ class User(UserProfile):
         self.client = MongoClient(db_uri)
         self.db = self.client[db_name]
         self.collection = self.db[collection_name]
-        self._to_dict_with_defaults()
+        self.to_dict_with_defaults()
 
     def create_user(self,user_data:dict):
         """
@@ -99,10 +100,16 @@ class User(UserProfile):
         """Deletes a user from the database."""
         return self.collection.delete_one({"_id": ObjectId(user_id)})
 
-    def _to_dict_with_defaults(self):
+    def to_dict_with_defaults(self):
         type_defaults = {str: "", int: 0, float: 0.0, bool: False}
         return {field.name: type_defaults.get(field.type, None) for field in fields(self)}
     # initialize the dictionnary from the profile dataclass
+
+    def get_enum_options(self):
+        dico = {}
+        for enum in Grade,Faculty,Ethnicity:
+            dico[enum.__name__] = [e.name for e in enum]
+        return dico
 
     def perform_matchmaking(self,user_id):
         """
@@ -112,9 +119,20 @@ class User(UserProfile):
     def __str__(self):
         return f"MongoDB User Collection: {self.collection.name}"
 
-class Matching:
-    def __init__(self):
-        pass
+    def embed(self,user_collection):
+        """
+        Embeds a user's profile with the embeddings model
+        :param user_id:
+        :return:
+        """
+        # use _to_dict_with_defaults first to send to the frontend
+        embedder = Embedder()
+        # get the user's dictionnary of data from the MongoDB database
+        # create a UserProfile object from the dictionary
+        embedding = embedder.process_profile(user_collection)
+        print("Profile stored in Pinecone")
+
+class Matching(User):
 
     def assign(self,user_id):
         """
@@ -125,6 +143,8 @@ class Matching:
         """
         #cluster_users()
         pass
+
+
 
 
 #TODO Implement the UserManager for login and signup views

@@ -1,14 +1,23 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
 <!DOCTYPE html>
 <html lang="en">
-{%extends 'base.html'%}
-{%load static%}
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Dashboard</title>
-    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}"> <!-- Link to external CSS -->
+    <link rel="stylesheet" href="{% static 'DatingApp/css/dashboard.css'%}">
 </head>
+
 {% block content %}
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard</title>
+    <link rel="stylesheet" href="{% static 'DatingApp/css/dashboard.css'%}">
+</head>
 <body>
 <div class="container">
     <h1>Welcome to Your Dashboard</h1>
@@ -16,14 +25,9 @@
     <div class="user-info">
         <h3>Profile Information</h3>
         <ul>
-            <li><strong>Name:</strong> {{ user_profile.name }}</li>
-            <li><strong>Age:</strong> {{ user_profile.age }}</li>
-            <li><strong>Grade:</strong> {{ user_profile.grade }}</li>
-            <li><strong>Ethnicity:</strong> {{ user_profile.ethnicity|join:", " }}</li>
-            <li><strong>Faculty:</strong> {{ user_profile.faculty }}</li>
-            <li><strong>Major:</strong> {{ user_profile.major|join:", " }}</li>
-            <li><strong>Bio:</strong> {{ user_profile.bio }}</li>
-            <li><strong>Preferences:</strong> {{ user_profile.preferences }}</li>
+            {% for field, value in user_profile.items %}
+                <li><strong>{{ field|title }}:</strong> {{ value|default:"Not provided" }}</li>
+            {% endfor %}
         </ul>
     </div>
 
@@ -32,29 +36,26 @@
         <form method="post">
             {% csrf_token %}
 
-            <label for="name">Name:</label>
-            <input type="text" name="name" id="name" value="{{ user_profile.name }}" required>
-
-            <label for="age">Age:</label>
-            <input type="number" name="age" id="age" value="{{ user_profile.age }}" required min="0">
-
-            <label for="grade">Grade:</label>
-            <input type="text" name="grade" id="grade" value="{{ user_profile.grade }}" required>
-
-            <label for="ethnicity">Ethnicity (comma-separated):</label>
-            <input type="text" name="ethnicity" id="ethnicity" value="{{ user_profile.ethnicity|join:', ' }}">
-
-            <label for="faculty">Faculty:</label>
-            <input type="text" name="faculty" id="faculty" value="{{ user_profile.faculty }}" required>
-
-            <label for="major">Major (comma-separated):</label>
-            <textarea name="major" id="major">{{ user_profile.major|join:', ' }}</textarea>
-
-            <label for="bio">Bio:</label>
-            <textarea name="bio" id="bio" rows="5">{{ user_profile.bio }}</textarea>
-
-            <label for="preferences">Preferences:</label>
-            <textarea name="preferences" id="preferences" rows="4">{{ user_profile.preferences }}</textarea>
+            <!-- Dynamic Form Fields -->
+            {% for field, value in default_info.items %}
+                <div class="form-field">
+                    <label for="{{ field }}">{{ field|title }}:</label>
+                    {% if value is None or value == '' %}
+                        <!-- Render a textarea for empty strings or None -->
+                        <textarea id="{{ field }}" name="{{ field }}" rows="3">{{ user_profile|get:field|default:"" }}</textarea>
+                    {% elif value|is_list %}
+                        <!-- Render a dropdown for list values -->
+                        <select id="{{ field }}" name="{{ field }}">
+                            {% for option in value %}
+                                <option value="{{ option }}" {% if user_profile|get:field == option %}selected{% endif %}>{{ option }}</option>
+                            {% endfor %}
+                        </select>
+                    {% else %}
+                        <!-- Render a text input for other types -->
+                        <input type="text" id="{{ field }}" name="{{ field }}" value="{{ user_profile|get:field|default:value }}">
+                    {% endif %}
+                </div>
+            {% endfor %}
 
             <button type="submit" class="save" name="edit">Save Changes</button>
         </form>
