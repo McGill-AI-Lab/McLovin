@@ -31,8 +31,6 @@ ALLOWED_HOSTS = [
     "mcgilldating.sytes.net"
 ]
 
-    
-
 
 # Application definition
 
