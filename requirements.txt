@@ -14,6 +14,7 @@ python-dotenv==1.0.0
 
 # Web framework
 django==4.2.5
+djongo==1.3.7
 
 # Test runner and additional libs
 matplotlib==3.7.1
