@@ -4,6 +4,9 @@ from pinecone import Pinecone, ServerlessSpec
 import os
 import time
 from dotenv import load_dotenv
+#from src.core.embedder import Embedder
+from src.core.profile import UserProfile, Faculty, Grade, Gender, Ethnicity, SexualOrientationProbabilities
+
 
 load_dotenv(dotenv_path='.env')
 
@@ -66,14 +69,16 @@ class Embedder:
         print("DEBUG GRADE",profile.grade)
 
         common_metadata = {
-            'age': profile.age,  # int
-            'grade': profile.grade.value,  # enum Grade
-            'faculty': profile.faculty.value,  # enum faculty
-            'ethnicity': [str(e.value) for e in profile.ethnicity],  # list of enum ethnicities
-            'major': profile.major,  # List of Strings
+            'age': profile.age,
+            'grade': profile.grade.value,
+            'faculty': profile.faculty.value,
+            'ethnicity': [str(e.value) for e in profile.ethnicity],
+            'major': profile.major,
+            'gender': profile.gender.value,
             'bio': profile.bio,
             'preferences': profile.preferences,
-            'cluster_': profile.cluster_id,
+            'cluster_id': profile.cluster_id,
+            'fake': profile.fake,
         }
 
         bio_record = {
@@ -106,3 +111,34 @@ class Embedder:
 
         # return the embedded vectors
         return [bio_embedding, pref_embedding]
+
+if "__main__" == __name__:
+    embedder = Embedder()
+    # for test, we can put fakeness = False, but might change
+
+    fake = False # for now, we say our example is a real person
+    current_gender = Gender.randomGender()
+    # generate a random list for GOIS
+    rand_genders = SexualOrientationProbabilities.generate_genders_of_interest(current_gender)
+
+    #
+    test_profile = UserProfile(
+        user_id="user_yukimi",
+        name="yukimi",
+        age=22,
+        gender=Gender.female,
+        genders_of_interest=[Gender.male],
+        grade=Grade.U3,
+        ethnicity=[Ethnicity.EAST_ASIAN],
+        faculty=Faculty.MANAGEMENT,
+        major=["Accounting"],
+        bio="I am japanese girl who likes to send stupid memes, but they are very funny. I like to draw and go out with friends. I am very cute.",
+        preferences= 'I love boys who are asian, and even more wasian boys. Nerds in CS or in math programs are even cooler. I love my nerds!',
+        fake=fake # default is True for synthetic, but we want a real person for this test
+
+    )
+    embedding = embedder.process_profile(test_profile) # this should save 2 records : one for bio and one for preferences
+    assert len(embedding[0]) == 384 # for bio vector
+    assert len(embedding[1]) == 384 # for pref vector
+    print("Profile stored in Pinecone")
+    print(test_profile.tostring())
