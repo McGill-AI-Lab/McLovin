@@ -123,17 +123,17 @@ if "__main__" == __name__:
 
     #
     test_profile = UserProfile(
-        user_id="user_999",
-        name="williamkiemlafond",
-        age=21,
-        gender=current_gender,
-        genders_of_interest=rand_genders,
-        grade=Grade.U2,
-        ethnicity=[Ethnicity.WHITE, Ethnicity.LATIN],
-        faculty=Faculty.ARTS,
-        major=["Design Engineering"],
-        bio="I love coding  ",
-        preferences= 'Likes girls who code',
+        user_id="user_yukimi",
+        name="yukimi",
+        age=22,
+        gender=Gender.female,
+        genders_of_interest=[Gender.male],
+        grade=Grade.U3,
+        ethnicity=[Ethnicity.EAST_ASIAN],
+        faculty=Faculty.MANAGEMENT,
+        major=["Accounting"],
+        bio="I am japanese girl who likes to send stupid memes, but they are very funny. I like to draw and go out with friends. I am very cute.",
+        preferences= 'I love boys who are asian, and even more wasian boys. Nerds in CS or in math programs are even cooler. I love my nerds!',
         fake=fake # default is True for synthetic, but we want a real person for this test
 
     )

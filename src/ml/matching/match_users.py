@@ -57,113 +57,166 @@ class MatchMaker:
             return True  # Temporary fallback
 
     def get_user_embeddings(self, user_id: str) -> Tuple[np.ndarray, np.ndarray]:
-        """Get both bio and preference embeddings for a user"""
+        """Get both bio and preference embeddings for a user using fetch"""
         try:
-            # Get bio embedding
-            bio_result = self.index.query(
-                vector=[0.0] * 384,
-                filter={"user_id": user_id},
-                namespace="bio-embeddings",
-                include_values=True,
-                top_k=1
+            logging.info(f"Fetching embeddings for user {user_id}")
+
+            # Fetch bio embedding
+            bio_result = self.index.fetch(
+                ids=[user_id],
+                namespace="bio-embeddings"
             )
 
-            # Get preference embedding
-            pref_result = self.index.query(
-                vector=[0.0] * 384,
-                filter={"user_id": user_id},
-                namespace="preferences-embeddings",
-                include_values=True,
-                top_k=1
+            # Fetch preference embedding
+            pref_result = self.index.fetch(
+                ids=[user_id],
+                namespace="preferences-embeddings"
             )
 
-            # Add error checking
-            if not getattr(bio_result, 'matches') or not getattr(pref_result, 'matches'):
-                logging.error(f"No embeddings found for user {user_id}")
-                return np.zeros(384), np.zeros(384)  # Return zero vectors as fallback
+            # Check if vectors exist in both namespaces
+            if user_id not in bio_result['vectors']:
+                logging.error(f"No bio embedding found for user {user_id}")
+                return np.zeros(384), np.zeros(384)
 
-            bio_embedding = np.array(getattr(bio_result, 'matches')[0]['values'])
-            pref_embedding = np.array(getattr(pref_result, 'matches')[0]['values'])
+            if user_id not in pref_result['vectors']:
+                logging.error(f"No preference embedding found for user {user_id}")
+                return np.zeros(384), np.zeros(384)
+
+            # Extract the embeddings
+            bio_embedding = np.array(bio_result['vectors'][user_id]['values'])
+            pref_embedding = np.array(pref_result['vectors'][user_id]['values'])
+
+            logging.info(f"Successfully retrieved embeddings for user {user_id}")
+            return bio_embedding, pref_embedding
 
         except Exception as e:
             logging.error(f"Error getting embeddings for user {user_id}: {str(e)}")
-            return np.zeros(384), np.zeros(384)  # Return zero vectors as fallback
+            return np.zeros(384), np.zeros(384)
 
-        return bio_embedding, pref_embedding
+    def calculate_match_score_cached(self, user1_id: str, user2_id: str,
+                                   user1_data: Dict, user2_data: Dict) -> float:
+        """Calculate match score using cached embeddings"""
+        try:
+            # Check compatibility using metadata
+            if not self.is_compatible(
+                {'id': user1_id, 'metadata': user1_data['metadata']},
+                {'id': user2_id, 'metadata': user2_data['metadata']}
+            ):
+                return 0.0
 
-    def calculate_match_score(self, user1: Dict, user2: Dict) -> float:
-        """Calculate mutual matching score between two users"""
-        if not self.is_compatible(user1, user2):
+            # Calculate bidirectional scores using cached embeddings
+            score1 = cosine_similarity(
+                user1_data['pref'].reshape(1, -1),
+                user2_data['bio'].reshape(1, -1)
+            )[0][0]
+
+            score2 = cosine_similarity(
+                user2_data['pref'].reshape(1, -1),
+                user1_data['bio'].reshape(1, -1)
+            )[0][0]
+
+            return (score1 + score2) / 2
+
+        except Exception as e:
+            logging.error(f"Error calculating match score: {str(e)}")
             return 0.0
 
-        # Get embeddings for both users
-        user1_bio, user1_pref = self.get_user_embeddings(user1['id'])
-        user2_bio, user2_pref = self.get_user_embeddings(user2['id'])
+    def find_matches_in_cluster(self, cluster_id: float) -> List[Tuple]:
+        """Find optimal matches within a single cluster"""
+        try:
+            # Get only users from this specific cluster
+            cluster_users = self.index.query(
+                vector=[0.0] * 384,
+                filter={"cluster_id": cluster_id},
+                namespace="bio-embeddings",
+                include_metadata=True,
+                top_k=1000
+            )
 
-        # Calculate bidirectional scores
-        # How well user1's preferences match user2's bio
-        score1 = cosine_similarity(
-            user1_pref.reshape(1, -1),
-            user2_bio.reshape(1, -1)
-        )[0][0]
+            users = getattr(cluster_users, 'matches', [])
+            num_users = len(users)
 
-        # How well user2's preferences match user1's bio
-        score2 = cosine_similarity(
-            user2_pref.reshape(1, -1),
-            user1_bio.reshape(1, -1)
-        )[0][0]
+            logging.info(f"\nProcessing Cluster {cluster_id}:")
+            logging.info(f"Number of users in cluster: {num_users}")
 
-        # Return average of both scores (total score)
-        total_score = (score1 + score2) / 2
-        return total_score
+            if num_users < 2:
+                logging.info(f"Skipping cluster {cluster_id} - needs at least 2 users")
+                return []
 
-    def find_matches_in_cluster(self, cluster_id: int) -> List[Tuple]:
-        """Find optimal matches within a cluster using maximum weight matching"""
+            # Pre-fetch all embeddings for the cluster
+            user_embeddings = {}  # Cache for embeddings
+            for user in users:
+                user_id = user['id']
+                bio_embedding, pref_embedding = self.get_user_embeddings(user_id)
+                user_embeddings[user_id] = {
+                    'bio': bio_embedding,
+                    'pref': pref_embedding,
+                    'metadata': user['metadata']
+                }
 
-        # Get all users in the cluster from bio namespace
-        cluster_users = self.index.query(
-            vector=[0.0] * 384,
-            filter={"cluster_id": cluster_id},
-            namespace="bio-embeddings",
-            include_values=True,
-            include_metadata=True,
-            top_k=1000
-        )
+            # Create graph
+            G = nx.Graph()
 
-        if len(getattr(cluster_users, 'matches')) < 2:
-            logging.info(f"Cluster {cluster_id} has less than 2 users. Skipping.")
+            # Add nodes
+            for user in users:
+                G.add_node(user['id'], **user['metadata'])
+
+            # Calculate possible combinations
+            possible_pairs = (num_users * (num_users - 1)) // 2
+            logging.info(f"Processing {num_users} users ({possible_pairs} possible pairs)")
+
+            # Add edges with weights (matching scores)
+            edge_count = 0
+            processed_pairs = 0
+
+            # Process each possible pair exactly once
+            for i, user1 in enumerate(users):
+                user1_id = user1['id']
+                for j in range(i + 1, len(users)):
+                    user2 = users[j]
+                    user2_id = user2['id']
+                    processed_pairs += 1
+
+                    # Calculate matching score using cached embeddings
+                    score = self.calculate_match_score_cached(
+                        user1_id, user2_id,
+                        user_embeddings[user1_id],
+                        user_embeddings[user2_id]
+                    )
+
+                    if score > 0:
+                        G.add_edge(user1_id, user2_id, weight=score)
+                        edge_count += 1
+                        logging.debug(f"Match found: {user1_id} - {user2_id} (score: {score:.3f})")
+
+            logging.info(f"Processed {processed_pairs} pairs, found {edge_count} compatible matches")
+
+            if edge_count == 0:
+                logging.info(f"No compatible matches in cluster {cluster_id}")
+                return []
+
+            # Find optimal matching
+            optimal_matches = nx.max_weight_matching(G, maxcardinality=True)
+
+            # Convert to list of tuples with scores
+            match_list = []
+            for user1_id, user2_id in optimal_matches:
+                score = G[user1_id][user2_id]['weight']
+                match_list.append((user1_id, user2_id, score))
+                logging.info(f"Optimal match: {user1_id} - {user2_id} (score: {score:.3f})")
+
+            logging.info(f"Created {len(match_list)} final matches in cluster {cluster_id}")
+            return match_list
+
+        except Exception as e:
+            logging.error(f"Error processing cluster {cluster_id}: {str(e)}")
             return []
 
-        # Create graph for maximum weight matching
-        G = nx.Graph()
-
-        # Add all users as nodes
-        for user in getattr(cluster_users,'matches'):
-            G.add_node(user['id'], **user['metadata'])
-
-        # Add edges with weights (matching scores)
-        for i, user1 in enumerate(getattr(cluster_users,'matches')):
-            for user2 in getattr(cluster_users,'matches')[i+1:]:
-                score = self.calculate_match_score(user1, user2)
-                if score > 0:  # Only add edge if users are compatible
-                    G.add_edge(user1['id'], user2['id'], weight=score)
-
-        # Find maximum weight matching
-        matches = nx.max_weight_matching(G, maxcardinality=True)
-
-        # Convert matches to list of tuples with scores
-        match_list = []
-        for user1_id, user2_id in matches:
-            score = G[user1_id][user2_id]['weight']
-            match_list.append((user1_id, user2_id, score))
-
-        return match_list
-
     def run_matching(self):
-        """Run matching algorithm for all clusters"""
+        """Run matching algorithm cluster by cluster"""
         logging.info("Starting matching process...")
 
-        # Get all unique cluster IDs from bio namespace
+        # Get all users
         all_users = self.index.query(
             vector=[0.0] * 384,
             filter={},
@@ -172,43 +225,102 @@ class MatchMaker:
             top_k=10000
         )
 
-        print("Number of matches:", len(getattr(all_users, 'matches')))
+        # Get unique cluster IDs, handling potential missing values
         cluster_ids = set()
-        for user in getattr(all_users,'matches'):
-            print("User ID:", user['id'])
-            print("User metadata:", user['metadata'])
-            print("Cluster:", user['metadata'].get('cluster_id', 'No cluster found'))
-            if 'cluster_id' in user['metadata']:
-                cluster_ids.add(user['metadata']['cluster_id'])
+        for user in getattr(all_users, 'matches'):
+            try:
+                cluster_id = float(user['metadata'].get('cluster_id', -1))
+                if cluster_id >= 0:  # Only add valid clusters
+                    cluster_ids.add(cluster_id)
+            except (KeyError, ValueError) as e:
+                logging.warning(f"Could not get cluster_id for user: {user.get('id', 'unknown')}")
+                continue
 
+        logging.info(f"Found {len(cluster_ids)} valid clusters: {sorted(cluster_ids)}")
 
+        # Process each cluster separately
         all_matches = []
-        for cluster_id in cluster_ids:
-            logging.info(f"Processing cluster {cluster_id}")
+        for cluster_id in sorted(cluster_ids):
+            logging.info(f"\nProcessing cluster {cluster_id}")
             cluster_matches = self.find_matches_in_cluster(cluster_id)
             all_matches.extend(cluster_matches)
 
-            # Update matches in database for both namespaces
-            self.update_matches(cluster_matches)
+            # Update matches in database
+            if cluster_matches:
+                self.update_matches(cluster_matches)
 
-        logging.info(f"Matching complete. Generated {len(all_matches)} matches.")
+        # Summary of all matches
+        logging.info("\nMatching Summary:")
+        logging.info(f"Total clusters processed: {len(cluster_ids)}")
+        logging.info(f"Total matches generated: {len(all_matches)}")
+
         return all_matches
 
+
     def update_matches(self, matches: List[Tuple]):
-        """Update user records with their matches in both namespaces"""
+        """Update user records with their matches"""
         for user1_id, user2_id, score in matches:
-            # Update metadata for both namespaces
+            # Store match data (convert score to string for Pinecone metadata)
+            match_data = {
+                "matched_users": [user2_id],
+                "match_scores": [f"{score:.4f}"]
+            }
+
+            # Update both namespaces
             for namespace in ["bio-embeddings", "preferences-embeddings"]:
-                # Update for user1
+                # Update user1's matches
                 self.index.update(
                     id=user1_id,
                     namespace=namespace,
-                    set_metadata={"matched_users": [user2_id], "match_scores": [float(score)]}
+                    set_metadata=match_data
                 )
 
-                # Update for user2
+                # Update user2's matches
                 self.index.update(
                     id=user2_id,
                     namespace=namespace,
-                    set_metadata={"matched_users": [user1_id], "match_scores": [float(score)]}
+                    set_metadata={
+                        "matched_users": [user1_id],
+                        "match_scores": [f"{score:.4f}"]
+                    }
                 )
+
+    def check_index_content(self):
+        """Check the content of the Pinecone index"""
+        try:
+            # Get stats for both namespaces
+            bio_stats = self.index.describe_index_stats(namespace="bio-embeddings")
+            pref_stats = self.index.describe_index_stats(namespace="preferences-embeddings")
+
+            logging.info(f"Bio embeddings namespace stats: {bio_stats}")
+            logging.info(f"Preference embeddings namespace stats: {pref_stats}")
+
+            # Try to fetch a sample from each namespace by querying first
+            sample_query = self.index.query(
+                vector=[0.0] * 384,
+                namespace="bio-embeddings",
+                include_metadata=True,
+                top_k=1
+            )
+
+            if getattr(sample_query, 'matches'):
+                sample_id = sample_query.matches[0]['id']
+
+                # Now fetch the complete records for this ID
+                bio_sample = self.index.fetch(
+                    ids=[sample_id],
+                    namespace="bio-embeddings"
+                )
+
+                pref_sample = self.index.fetch(
+                    ids=[sample_id],
+                    namespace="preferences-embeddings"
+                )
+
+                logging.info(f"Sample bio record: {bio_sample}")
+                logging.info(f"Sample preference record: {pref_sample}")
+            else:
+                logging.error("No samples found in index")
+
+        except Exception as e:
+            logging.error(f"Error checking index content: {str(e)}")
