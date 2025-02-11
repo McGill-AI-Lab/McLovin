@@ -10,10 +10,16 @@ typing-extensions==4.8.0
 pinecone-client==2.2.0
 
 # Environment variables
-python-dotenv==1.0.0
+python-dotenv==1.0.1
 
 # Web framework
-django==4.2.5
+bcrypt==4.2.1
+django==5.1.4
+djangorestframework==3.14.0
+pymongo==4.10.1
+werkzeug==2.2.3
+bson==0.5.10
+
 
 # Test runner and additional libs
 matplotlib==3.7.1
