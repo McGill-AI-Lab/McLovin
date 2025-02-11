@@ -57,8 +57,7 @@ def get_attributes(model, image_tensor):
 
 if __name__ == "__main__":
     model = load_model()
-    transformed_image = process_image('helpers/sample_faces/suzy.jpg')
-    print(transformed_image)
+    transformed_image = process_image('helpers/sample_faces/michael_jordan.jpg')
     # debug
     #im = Image.open('helpers/sample_faces/suzy.jpg')
     #im.show()
