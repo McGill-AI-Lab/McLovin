@@ -191,8 +191,23 @@ class User(UserProfile):
         # create a UserProfile object from the dictionary
         print("user collection being sent to Embedder",user_collection)
 
-        embedding = embedder.process_profile(user_collection)
+        try :
+            embedding = embedder.process_profile(user_collection)
+
+        except Exception as e:
+            print("An error occured during the process of user embedding : ",e)
+
+        print("result from embedder",embedding)
+
         print("Profile stored in Pinecone")
+
+        try:
+            print(cluster_users(10, 101))
+        
+        except Exception as e:
+            print("An error occured during the process of clustering : ",e)
+
+        print("users successfully clustered !")
 
 class Matching(User):
 
