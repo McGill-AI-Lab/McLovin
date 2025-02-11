@@ -85,18 +85,18 @@ def signup_user(request):
             # Hash the password
             hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
 
-            # Save the user in the database
+            # Saves the user with credentials and default values here
             user = {
                 "username": firstName+" "+lastName,
                 "email": email,
                 "password": hashed_password.decode(),  # Store the hashed password as a string
                 'age': 0,
                 'grade': 0,
-                'ethnicity': "Dunno",
-                'faculty': "Dunno",
-                'major': "Hmm",
+                'ethnicity': [],# default list
+                'faculty': "Faculty",
+                'major': [], # default list
                 'bio': "This is my bio !",
-                'preferences': "None",
+                'preferences': "preference",
             }
             result = mongo_db.users.insert_one(user)
 
@@ -122,7 +122,7 @@ def get_paremeters():
     for key,value in initials.items():
         if key in dic:
             initials[key] = dic[key]
-    print(initials)
+
     return initials
 
 @login_required
@@ -189,6 +189,8 @@ def user_dashboard(request, user_id):
 
                 data["user_id"] =4948485875 # insert the user_id at the beginning of the list
 
+                print(data)
+                print("THIS WAS DATA")
                 user_collection = UserProfile(**data)
 
                 print(user_collection.tostring())
@@ -208,6 +210,8 @@ def user_dashboard(request, user_id):
     # Merge stored user profile with default values
 
     merged_profile = {field: user_profile.get(field, default_values[field]) for field in default_values}
+
+    merged_profile["major"] = []
 
     context = {
         'user_profile': merged_profile,

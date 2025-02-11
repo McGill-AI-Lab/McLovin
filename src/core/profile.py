@@ -76,6 +76,5 @@ class UserProfile:
             f"cluster_id: {self.cluster_id} "
         )
 
-
 # Note: major and faculty might not be necessarily related (ex.SE - CS >> Civil Eng - SE)
 # might need to leverage LLM or any algorithm with Cosine Similarity

@@ -75,8 +75,20 @@ class User(UserProfile):
             return None
 
     def get_user_by_id(self, user_id):
-        """Fetches a user by their ID."""
-        return self.collection.find_one({"_id": ObjectId(user_id)})
+        """Fetches a user by their ID and converts the grade string to a Grade enum."""
+        user_data = self.collection.find_one({"_id": ObjectId(user_id)})
+
+        for liste,Enume in zip(["grade","faculty","ethnicity"],[Grade,Faculty,Ethnicity]):
+            if user_data and liste in user_data:
+                # Convert the string grade to the corresponding Grade enum
+                grade_str = user_data[liste]
+                try:
+                    user_data[liste] = Enume[grade_str]
+                except KeyError:
+                    # Handle the case where the grade string does not match any enum member
+                    user_data[liste] = None  # or raise an exception, or handle it as you see fit
+
+        return user_data
 
     def authenticate_user(self, email, password):
         """Authenticates a user with email and password."""
@@ -101,8 +113,8 @@ class User(UserProfile):
         return self.collection.delete_one({"_id": ObjectId(user_id)})
 
     def to_dict_with_defaults(self):
-        type_defaults = {str: "", int: 0, float: 0.0, bool: False}
-        return {field.name: type_defaults.get(field.type, None) for field in fields(self)}
+        type_defaults = {str: "", int: 0, float: 0.0, bool: False,list:[]}
+        return {field.name: type_defaults.get(field.type, []) for field in fields(self)}
     # initialize the dictionnary from the profile dataclass
 
     def get_enum_options(self):
@@ -143,8 +155,6 @@ class Matching(User):
         """
         #cluster_users()
         pass
-
-
 
 
 #TODO Implement the UserManager for login and signup views
