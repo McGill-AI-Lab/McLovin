@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect
 import json
 import bcrypt
-from .user import User
+from .user import User,deserialize_enums,serialize_enums
 
 from dotenv import dotenv_values, find_dotenv,load_dotenv
 
@@ -24,6 +24,7 @@ config = dotenv_values(dotenv_path=config_path) # returns a dictionnary of doten
 mongo_client = MongoClient(config["MONGO_URI"])
 mongo_db = mongo_client[config["MONGO_DB_NAME"]]
 users_collection = mongo_db["users"]
+
 
 @api_view(['GET', 'POST'])
 @csrf_exempt
@@ -85,18 +86,18 @@ def signup_user(request):
             # Hash the password
             hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
 
-            # Save the user in the database
+            # Saves the user with credentials and default values here
             user = {
                 "username": firstName+" "+lastName,
                 "email": email,
                 "password": hashed_password.decode(),  # Store the hashed password as a string
                 'age': 0,
                 'grade': 0,
-                'ethnicity': "Dunno",
-                'faculty': "Dunno",
-                'major': "Hmm",
+                'ethnicity': [],# default list
+                'faculty': "Faculty",
+                'major': [], # default list
                 'bio': "This is my bio !",
-                'preferences': "None",
+                'preferences': "preference",
             }
             result = mongo_db.users.insert_one(user)
 
@@ -122,12 +123,16 @@ def get_paremeters():
     for key,value in initials.items():
         if key in dic:
             initials[key] = dic[key]
-    print(initials)
+
+    del initials['user_id']
+    del initials['cluster_id']
+
     return initials
 
 @login_required
 def user_dashboard(request, user_id):
     user_profile = users_collection.find_one({"_id": ObjectId(user_id)})
+    user_profile = deserialize_enums(user_profile)
 
     if not user_profile:
         messages.error(request, 'User profile not found.')
@@ -135,8 +140,8 @@ def user_dashboard(request, user_id):
 
     # Get default values from the User class
     default_values = User().to_dict_with_defaults()
-    default_values.pop("user_id", None) # the user id is set on the server side
-    default_values.pop("cluser_id", None)  # the user id is set on the server side
+    default_values.pop("user_id", None)  # the user id is set on the server side
+    default_values.pop("cluster_id", None)  # the cluster id is set on the server side
 
     if request.method == 'POST':
         if 'edit' in request.POST:
@@ -146,58 +151,66 @@ def user_dashboard(request, user_id):
                 for field in default_values
             }
 
-            dic = {}
-            for enum in Grade, Faculty, Ethnicity:
-                dic[str(enum.__name__).lower()] = [{e.name:e} for e in enum]
+            print("UPDATED DATA RAW ", updated_data)
+
+
+            # Create a dictionary to map enum names to their respective enum classes
+            enum_mapping = {
+                'grade': Grade,
+                'faculty': Faculty,
+                'ethnicity': Ethnicity,
+            }
+
+            # Function to map a list of string values to their corresponding enum values
+            def map_to_enum(enum_class, values):
+                if isinstance(values, str):
+                    values = values.split(',')  # Split comma-separated string into a list
+                return [enum_class[value.strip()] for value in values if value.strip() in enum_class.__members__]
+
+            # Convert grade, faculty, and ethnicity fields to their respective enum values
+            for field, enum_class in enum_mapping.items():
+                if field in updated_data:
+                    updated_data[field] = map_to_enum(enum_class, updated_data[field])
+
+            print("UPDATED DATA WITH ENUMS ", updated_data)
 
             # Update the user profile in MongoDB
-            mongo_db.users.update_one({'_id': ObjectId(user_id)}, {'$set': updated_data})
+            mongo_db.users.update_one({'_id': ObjectId(user_id)}, {'$set': serialize_enums(updated_data)})
             messages.success(request, 'Profile updated successfully!')
 
-            # now perform conversion to inject into the pinecone database
-            def map(grade_list, grade_value):
-                for grade_dict in grade_list:
-                    if grade_value in grade_dict:
-                        return grade_dict[grade_value]
-                return None  # Return None if the grade_value is not found
-
-            for to_translate in 'grade','faculty','ethnicity':
-                #print(map(dic[to_translate], updated_data[to_translate]).value) would print smt like Grade.U0
-                updated_data[to_translate] = map(dic[to_translate], updated_data[to_translate])
-
-
-            print(updated_data)
-
-            # Now check if the User has complete data, and if so perform embedding on his profile
+            # Now check if the User has complete data, and if so perform embedding on their profile
             incomplete = False
-            for field,value in updated_data.items():
+            for field, value in updated_data.items():
                 if not value:
-                    #messages.error(request, f'Please fill in the {field} field.')
-                    #return redirect('user_dashboard', user_id=user_id)
                     incomplete = True
+                    break
 
             if not incomplete:
-
                 data = User().get_user_by_id(user_id)
 
                 # DEBUGGING
-                data.pop("_id", None) # remove the id from the data
+                data.pop("_id", None)  # remove the id from the data
                 data.pop("username", None)
                 data.pop("email", None)
                 data.pop("password", None)
                 data.pop("cluster_id", None)
 
-                data["user_id"] =4948485875 # insert the user_id at the beginning of the list
+                data["user_id"] = str(ObjectId(user_id))  # setting user_id to the _id used by Mongo (easier for retrieval)
+
+                # preprocess data for cleanup
+                # remove grade's list
+                data["grade"] = data["grade"][0]
+                data["faculty"] = data["faculty"][0]
 
                 user_collection = UserProfile(**data)
 
                 print(user_collection.tostring())
-                # create a UserProfile instance to perform the embedding
+                # Create a UserProfile instance to perform the embedding
                 User().embed(user_collection)
 
-                print("User has been successfully embedded !")
+                print(f"User {data['user_id']} has been successfully embedded!")
 
-            return redirect('user_dashboard', user_id=user_id)
+            return redirect('home')
 
         elif 'delete' in request.POST:
             # Delete the user profile from MongoDB
@@ -206,11 +219,12 @@ def user_dashboard(request, user_id):
             return redirect('logout')
 
     # Merge stored user profile with default values
-
     merged_profile = {field: user_profile.get(field, default_values[field]) for field in default_values}
+
+    merged_profile["major"] = []
 
     context = {
         'user_profile': merged_profile,
-        'default_info':get_paremeters(),
+        'default_info': get_paremeters(),
     }
     return render(request, 'dashboard.html', context)

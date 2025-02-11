@@ -4,19 +4,15 @@
 
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Dashboard</title>
-    <link rel="stylesheet" href="{% static 'DatingApp/css/dashboard.css'%}">
-</head>
 
 {% block content %}
     <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Dashboard</title>
-    <link rel="stylesheet" href="{% static 'DatingApp/css/dashboard.css'%}">
+    <link rel="stylesheet" href="{% static 'DatingApp/css/dashboard.css' %}">
+    <!-- Include a tags input library (e.g., Tagify) -->
+    <link href="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
 <div class="container">
@@ -33,7 +29,7 @@
 
     <div class="form-section">
         <h3>Edit Your Profile</h3>
-        <form method="post">
+        <form method="post" id="profile-form">
             {% csrf_token %}
 
             <!-- Dynamic Form Fields -->
@@ -43,8 +39,13 @@
                     {% if value is None or value == '' %}
                         <!-- Render a textarea for empty strings or None -->
                         <textarea id="{{ field }}" name="{{ field }}" rows="3">{{ user_profile|get:field|default:"" }}</textarea>
+                    {% elif value|is_list and field == 'ethnicity' %}
+                        <!-- Render a tags input for ethnicity with predefined suggestions -->
+                        <input id="{{ field }}" name="{{ field }}" value="{{ user_profile|get:field|join:',' }}" />
+                    {% elif value|is_list and field == 'major' %}
+                         <input id="{{ field }}" name="{{ field }}" value="{{ user_profile|get:field|join:',' }}" />
                     {% elif value|is_list %}
-                        <!-- Render a dropdown for list values -->
+                        <!-- Render a dropdown for other list values -->
                         <select id="{{ field }}" name="{{ field }}">
                             {% for option in value %}
                                 <option value="{{ option }}" {% if user_profile|get:field == option %}selected{% endif %}>{{ option }}</option>
@@ -73,6 +74,41 @@
         <a href="{% url 'home' %}">⟵ Back to Home</a>
     </div>
 </div>
+
+<!-- Include Tagify library -->
+<script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify"></script>
+<script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.polyfills.min.js"></script>
+
+<script>
+    // Initialize Tagify for ethnicity (with predefined suggestions)
+    const ethnicityInput = document.querySelector('input[name="ethnicity"]');
+    const ethnicityTagify = new Tagify(ethnicityInput, {
+        enforceWhitelist: true, // Only allow whitelisted values
+        whitelist: {{ default_info.ethnicity|safe }}, // Predefined ethnicity options
+        dropdown: {
+            enabled: 1, // Show suggestions dropdown
+        },
+    });
+
+    // Initialize Tagify for major (free-form tags)
+    const majorInput = document.querySelector('input[name="major"]');
+    const majorTagify = new Tagify(majorInput, {
+        enforceWhitelist: false, // Allow any input
+        dropdown: {
+            enabled: 0, // No suggestions dropdown
+        },
+    });
+
+    // Ensure the form submits the tags as a comma-separated string
+    document.getElementById('profile-form').addEventListener('submit', function (e) {
+        const ethnicityTags = ethnicityTagify.value.map(tag => tag.value).join(',');
+        const majorTags = majorTagify.value.map(tag => tag.value).join(',');
+
+        // Update hidden inputs or modify form data before submission
+        ethnicityInput.value = ethnicityTags;
+        majorInput.value = majorTags;
+    });
+</script>
 </body>
 {% endblock content %}
 </html>
