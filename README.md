@@ -95,9 +95,9 @@ python pytest tests
 ```
 
 # 📊 v.01 - Clustering and Matching
-- **Embed** user profile data via **SBERT** (PyTorch).
+- **Embed** user profile data via **SBERT** (PineCone).
 - **Store** embeddings in **Pinecone** (+ optional sentiment score).
-- **Assign** each user to a cluster via **K-Means** (Pytorch).
+- **Assign** each user to a cluster via **K-Means** (Scikit-Learn).
 - **Rank** matches within that cluster using **cosine similarity**.
 - **Refine** final scores with metadata weighting
 
