@@ -75,7 +75,7 @@ class Embedder:
             'gender': profile.gender.value,
             'bio': profile.bio,
             'preferences': profile.preferences,
-            'cluster_': profile.cluster_id,
+            'cluster_id': profile.cluster_id,
             'fake': profile.fake,
         }
 

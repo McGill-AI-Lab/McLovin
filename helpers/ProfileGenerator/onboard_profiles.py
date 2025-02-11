@@ -30,7 +30,7 @@ def onboard_fake_profiles(csv_path: str, index_name: str = "matching-index"):
             'major': row['major'],
             'bio': row['bios'],
             'preferences': "none for now",
-            'cluster_': -1,
+            'cluster_id': -1,
         }
 
         bio_record = {
