@@ -21,9 +21,51 @@ from functools import wraps
 from urllib.parse import urlencode
 from django.shortcuts import redirect
 from dotenv import find_dotenv,dotenv_values
+from bson import ObjectId
 
 config_path = find_dotenv("config.env")
 config = dotenv_values(dotenv_path=config_path) # returns a dictionnary of dotenv values
+
+from bson import ObjectId
+
+enum_fields = {
+    "grade": Grade,
+    "ethnicity": Ethnicity,
+    "faculty": Faculty
+}
+
+def serialize_enums(data):
+    """Recursively convert enums inside lists/dicts to their string names."""
+    if isinstance(data, list):  # If data is a list, serialize each item
+        return [serialize_enums(item) for item in data]
+    elif isinstance(data, dict):  # If data is a dictionary, serialize each value
+        return {key: serialize_enums(value) for key, value in data.items()}
+    elif isinstance(data, Grade) or isinstance(data, Faculty) or isinstance(data, Ethnicity):
+        return data.name
+    return data  # Return as is if not an enum
+
+def deserialize_enums(data, enum_mapping=enum_fields):
+    """
+    Recursively convert stored enum strings (including lists) back to their respective Enums.
+
+    :param data: The data retrieved from MongoDB.
+    :param enum_mapping: A dictionary mapping field names to Enum classes.
+    :return: Data with Enums restored.
+    """
+    if isinstance(data, list):  # If data is a list, deserialize each item
+        return [deserialize_enums(item, enum_mapping) for item in data]
+    elif isinstance(data, dict):  # If data is a dictionary, deserialize each value
+        return {key: deserialize_enums(value, enum_mapping) for key, value in data.items()}
+    elif isinstance(data, str):  # If it's a string, check if it belongs to any Enum
+        for enum_cls in enum_mapping.values():
+            try:
+                return enum_cls[data]  # Convert string to Enum
+            except KeyError:
+                continue
+    return data  # Return as is if not an enum
+
+
+
 
 def login_required(view_func):
     @wraps(view_func)
@@ -79,19 +121,21 @@ class User(UserProfile):
             return None
 
     def get_user_by_id(self, user_id):
-        """Fetches a user by their ID and converts the grade string to a Grade enum."""
+        """Fetch a user by their ID and converts all enum strings inside lists back to Enums."""
         user_data = self.collection.find_one({"_id": ObjectId(user_id)})
 
-        for liste,Enume in zip(["grade","faculty","ethnicity"],[Grade,Faculty,Ethnicity]):
-            if user_data and liste in user_data:
-                # Convert the string grade to the corresponding Grade enum
-                grade_str = user_data[liste]
-                try:
-                    user_data[liste] = Enume[grade_str]
-                except KeyError:
-                    # Handle the case where the grade string does not match any enum member
-                    user_data[liste] = None  # or raise an exception, or handle it as you see fit
+        if not user_data:
+            return None
 
+        enum_fields = {
+            "grade": Grade,
+            "ethnicity": Ethnicity,
+            "faculty": Faculty
+        }
+
+        user_data = deserialize_enums(user_data, enum_fields)
+
+        print("RAW USER DATA RETRIEVED:", user_data)
         return user_data
 
     def authenticate_user(self, email, password):
@@ -145,6 +189,8 @@ class User(UserProfile):
         embedder = Embedder()
         # get the user's dictionnary of data from the MongoDB database
         # create a UserProfile object from the dictionary
+        print("user collection being sent to Embedder",user_collection)
+
         embedding = embedder.process_profile(user_collection)
         print("Profile stored in Pinecone")
 

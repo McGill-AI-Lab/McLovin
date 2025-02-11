@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect
 import json
 import bcrypt
-from .user import User
+from .user import User,deserialize_enums,serialize_enums
 
 from dotenv import dotenv_values, find_dotenv,load_dotenv
 
@@ -24,6 +24,7 @@ config = dotenv_values(dotenv_path=config_path) # returns a dictionnary of doten
 mongo_client = MongoClient(config["MONGO_URI"])
 mongo_db = mongo_client[config["MONGO_DB_NAME"]]
 users_collection = mongo_db["users"]
+
 
 @api_view(['GET', 'POST'])
 @csrf_exempt
@@ -123,11 +124,15 @@ def get_paremeters():
         if key in dic:
             initials[key] = dic[key]
 
+    del initials['user_id']
+    del initials['cluster_id']
+
     return initials
 
 @login_required
 def user_dashboard(request, user_id):
     user_profile = users_collection.find_one({"_id": ObjectId(user_id)})
+    user_profile = deserialize_enums(user_profile)
 
     if not user_profile:
         messages.error(request, 'User profile not found.')
@@ -147,6 +152,7 @@ def user_dashboard(request, user_id):
             }
 
             print("UPDATED DATA RAW ", updated_data)
+
 
             # Create a dictionary to map enum names to their respective enum classes
             enum_mapping = {
@@ -169,7 +175,7 @@ def user_dashboard(request, user_id):
             print("UPDATED DATA WITH ENUMS ", updated_data)
 
             # Update the user profile in MongoDB
-            mongo_db.users.update_one({'_id': ObjectId(user_id)}, {'$set': updated_data})
+            mongo_db.users.update_one({'_id': ObjectId(user_id)}, {'$set': serialize_enums(updated_data)})
             messages.success(request, 'Profile updated successfully!')
 
             # Now check if the User has complete data, and if so perform embedding on their profile
@@ -189,19 +195,22 @@ def user_dashboard(request, user_id):
                 data.pop("password", None)
                 data.pop("cluster_id", None)
 
-                data["user_id"] = 4948485875  # insert the user_id at the beginning of the list
+                data["user_id"] = str(ObjectId(user_id))  # setting user_id to the _id used by Mongo (easier for retrieval)
 
-                print(data)
-                print("THIS WAS DATA")
+                # preprocess data for cleanup
+                # remove grade's list
+                data["grade"] = data["grade"][0]
+                data["faculty"] = data["faculty"][0]
+
                 user_collection = UserProfile(**data)
 
                 print(user_collection.tostring())
                 # Create a UserProfile instance to perform the embedding
                 User().embed(user_collection)
 
-                print("User has been successfully embedded!")
+                print(f"User {data["user_id"]} has been successfully embedded!")
 
-            return redirect('user_dashboard', user_id=user_id)
+            return redirect('home')
 
         elif 'delete' in request.POST:
             # Delete the user profile from MongoDB
