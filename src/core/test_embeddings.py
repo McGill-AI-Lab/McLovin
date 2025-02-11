@@ -1,5 +1,6 @@
-from src.core.embedder import Embedder
-from src.core.profile import UserProfile, Faculty, Grade, Ethnicity
+
+from embedder import Embedder
+from profile import UserProfile, Faculty, Grade, Ethnicity
 
 def test_embeddings():
     embedder = Embedder()
@@ -20,3 +21,5 @@ def test_embeddings():
     assert len(embedding[1]) == 384 # for pref vector
     print("Profile stored in Pinecone")
     print(test_profile.tostring())
+
+test_embeddings()
