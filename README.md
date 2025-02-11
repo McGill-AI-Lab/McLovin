@@ -103,15 +103,12 @@ python pytest tests
 
 *in the end, this creates a sort of **Matching Elo** for the users per cluster*
 
-![kmeans_evaluation](https://github.com/user-attachments/assets/67ed247e-b774-45d3-af26-fdf9f630a9df)
+![image](https://github.com/user-attachments/assets/254277d5-b6da-45ca-9d20-089b577b9ccc)
 
 Here are the results for the k-means clustering. We can see that for our initial number of 100 users, the silhouettee score peaks at 3 clusters. However, we are planning on recalibrating this with 500 fake usere, a more realistic amount of McGill students. Thus, we are projecting that silhouette score to change, and k to increase.
 
 ## Synthetic Data Generation
 To validate the clustering algorithm with a larger user pool, we implemented a Bio Generator that creates realistic user profiles:
-
-![image](https://github.com/user-attachments/assets/da889986-2de1-4d49-ac67-6de2bbf6caf5)
-Here is a sample of the first rows that were generated
 
 ### Bio Generator Implementation
 ```
@@ -133,24 +130,6 @@ helpers/ProfileGenerator/
   - Physical and personality traits
   - AI-generated bios using Gemini
 
-### Usage
-```bash
-# From project root
-python helpers/ProfileGenerator/bio_generator.py
-```
-
-### Configuration
-- Daily API limit: 1300 profiles
-- Rate limiting: 15 profiles per minute
-- Outputs saved to: `outputs/profiles.csv`
-- Profile attributes:
-  - gender
-  - major
-  - hobbies
-  - physical traits
-  - personality traits
-  - generated bio
-
 ### Sample Output
 ```csv
 gender,major,hobbies,Attractive phys traits,Attractive pers traits,bios
@@ -162,6 +141,29 @@ This implementation helped validate the clustering algorithm by:
 2. Maintaining realistic distributions of majors and interests
 3. Creating natural language bios for embedding testing
 4. Simulating real-world user profile variations
+
+![image](https://github.com/user-attachments/assets/da889986-2de1-4d49-ac67-6de2bbf6caf5)
+Here is a sample of the first rows that were generated
+
+After clustering that pool of users, we can see some logical matching that occured in each cluster.
+
+### Let's see some cluster examples:
+
+- cluster 3
+
+<img width="1243" alt="image" src="https://github.com/user-attachments/assets/470aec57-ef42-4edb-b8b0-44638761c4c0" />
+*I think the users share a common interest in politics (might be just me though...*
+
+- cluster 6
+  
+<img width="1243" alt="image" src="https://github.com/user-attachments/assets/38d82518-9d24-4a88-9ecf-6d971114283f" />
+*These profiles all seem to be curious and free-spirited thinkers, with a shared passion for exploring diverse ideas*
+
+- lastly, my favourite, cluster 8
+
+<img width="1243" alt="image" src="https://github.com/user-attachments/assets/de5fca1b-c861-4122-8a45-f1612a0450db" />
+*I am predicting some study dates @ McConnel or Trottier Eng buildings*
+
 
 ## *I want to try out the k-means :)*
 If you’d like to run the K-Means yourself...
