@@ -194,10 +194,10 @@ class User(UserProfile):
         try :
             embedding = embedder.process_profile(user_collection)
 
+            print("result from embedder", embedding)
+
         except Exception as e:
             print("An error occured during the process of user embedding : ",e)
-
-        print("result from embedder",embedding)
 
         print("Profile stored in Pinecone")
 
