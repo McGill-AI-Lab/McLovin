@@ -5,7 +5,7 @@ import os
 import time
 from dotenv import load_dotenv
 #from src.core.embedder import Embedder
-from src.core.profile import UserProfile, Faculty, Grade, Ethnicity
+from src.core.profile import UserProfile, Faculty, Grade, Gender, Ethnicity, SexualOrientationProbabilities
 
 
 load_dotenv(dotenv_path='.env')
@@ -67,12 +67,12 @@ class Embedder:
         # we want to upsert into pinecone 2 different records: bio and pref
         # make a general metadata info (only the type is different) for both records
         common_metadata = {
-            'age': profile.age,  # int
-            'grade': profile.grade.value,  # enum Grade
-            'faculty': profile.faculty.value,  # enum faculty
-            'ethnicity': [str(e.value) for e in profile.ethnicity],  # list of enum ethnicities
-            'major': profile.major,  # List of Strings
-            'gender':profile.gender,
+            'age': profile.age,
+            'grade': profile.grade.value,
+            'faculty': profile.faculty.value,
+            'ethnicity': [str(e.value) for e in profile.ethnicity],
+            'major': profile.major,
+            'gender': profile.gender.value,
             'bio': profile.bio,
             'preferences': profile.preferences,
             'cluster_': profile.cluster_id,
@@ -112,17 +112,28 @@ class Embedder:
 
 if "__main__" == __name__:
     embedder = Embedder()
+    # for test, we can put fakeness = False, but might change
 
+    fake = False # for now, we say our example is a real person
+    current_gender = Gender.randomGender()
+    # generate a random list for GOIS
+    rand_genders = SexualOrientationProbabilities.generate_genders_of_interest(current_gender)
+
+    #
     test_profile = UserProfile(
-        user_id="302",
+        user_id="user_999",
         name="williamkiemlafond",
         age=21,
+        gender=current_gender,
+        genders_of_interest=rand_genders,
         grade=Grade.U2,
         ethnicity=[Ethnicity.WHITE, Ethnicity.LATIN],
         faculty=Faculty.ARTS,
         major=["Design Engineering"],
         bio="I love coding  ",
-        preferences= 'Likes korean looking girls with big bumboclats',
+        preferences= 'Likes girls who code',
+        fake=fake # default is True for synthetic, but we want a real person for this test
+
     )
     embedding = embedder.process_profile(test_profile) # this should save 2 records : one for bio and one for preferences
     assert len(embedding[0]) == 384 # for bio vector
