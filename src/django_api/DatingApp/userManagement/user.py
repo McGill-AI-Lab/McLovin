@@ -20,6 +20,10 @@ from dataclasses import dataclass, asdict
 from functools import wraps
 from urllib.parse import urlencode
 from django.shortcuts import redirect
+from dotenv import find_dotenv,dotenv_values
+
+config_path = find_dotenv("config.env")
+config = dotenv_values(dotenv_path=config_path) # returns a dictionnary of dotenv values
 
 def login_required(view_func):
     @wraps(view_func)
@@ -41,16 +45,16 @@ def login_required(view_func):
 
 
 # Connect to MongoDB
-client = MongoClient("mongodb://localhost:27017")
-db = client["user_management"]
+
+client = MongoClient(config["MONGO_URI"])
+db = client[config["MONGO_DB_NAME"]]
 users_collection = db["users"]
-#"mongodb://localhost:27017/"
 
 # this app was specifically made to test the database interactions of Django with the mongodb DB
 class User(UserProfile):
     """A custom User class for MongoDB interaction using pymongo."""
 
-    def __init__(self, db_uri="mongodb://localhost:27017", db_name="user_management", collection_name="users"):
+    def __init__(self, db_uri=config["MONGO_URI"], db_name=config["MONGO_DB_NAME"], collection_name="users"):
         self.client = MongoClient(db_uri)
         self.db = self.client[db_name]
         self.collection = self.db[collection_name]
