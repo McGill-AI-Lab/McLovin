@@ -138,6 +138,5 @@ class UserProfile:
             f"fake: {self.fake}"
         )
 
-
 # Note: major and faculty might not be necessarily related (ex.SE - CS >> Civil Eng - SE)
 # might need to leverage LLM or any algorithm with Cosine Similarity

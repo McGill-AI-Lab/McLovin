@@ -66,6 +66,8 @@ class Embedder:
 
         # we want to upsert into pinecone 2 different records: bio and pref
         # make a general metadata info (only the type is different) for both records
+        print("DEBUG GRADE",profile.grade)
+
         common_metadata = {
             'age': profile.age,
             'grade': profile.grade.value,

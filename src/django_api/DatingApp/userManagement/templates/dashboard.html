@@ -1,14 +1,19 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
 <!DOCTYPE html>
 <html lang="en">
-{%extends 'base.html'%}
-{%load static%}
-<head>
+
+{% block content %}
+    <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Dashboard</title>
-    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}"> <!-- Link to external CSS -->
+    <link rel="stylesheet" href="{% static 'DatingApp/css/dashboard.css' %}">
+    <!-- Include a tags input library (e.g., Tagify) -->
+    <link href="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.css" rel="stylesheet" type="text/css" />
 </head>
-{% block content %}
 <body>
 <div class="container">
     <h1>Welcome to Your Dashboard</h1>
@@ -16,45 +21,42 @@
     <div class="user-info">
         <h3>Profile Information</h3>
         <ul>
-            <li><strong>Name:</strong> {{ user_profile.name }}</li>
-            <li><strong>Age:</strong> {{ user_profile.age }}</li>
-            <li><strong>Grade:</strong> {{ user_profile.grade }}</li>
-            <li><strong>Ethnicity:</strong> {{ user_profile.ethnicity|join:", " }}</li>
-            <li><strong>Faculty:</strong> {{ user_profile.faculty }}</li>
-            <li><strong>Major:</strong> {{ user_profile.major|join:", " }}</li>
-            <li><strong>Bio:</strong> {{ user_profile.bio }}</li>
-            <li><strong>Preferences:</strong> {{ user_profile.preferences }}</li>
+            {% for field, value in user_profile.items %}
+                <li><strong>{{ field|title }}:</strong> {{ value|default:"Not provided" }}</li>
+            {% endfor %}
         </ul>
     </div>
 
     <div class="form-section">
         <h3>Edit Your Profile</h3>
-        <form method="post">
+        <form method="post" id="profile-form">
             {% csrf_token %}
 
-            <label for="name">Name:</label>
-            <input type="text" name="name" id="name" value="{{ user_profile.name }}" required>
-
-            <label for="age">Age:</label>
-            <input type="number" name="age" id="age" value="{{ user_profile.age }}" required min="0">
-
-            <label for="grade">Grade:</label>
-            <input type="text" name="grade" id="grade" value="{{ user_profile.grade }}" required>
-
-            <label for="ethnicity">Ethnicity (comma-separated):</label>
-            <input type="text" name="ethnicity" id="ethnicity" value="{{ user_profile.ethnicity|join:', ' }}">
-
-            <label for="faculty">Faculty:</label>
-            <input type="text" name="faculty" id="faculty" value="{{ user_profile.faculty }}" required>
-
-            <label for="major">Major (comma-separated):</label>
-            <textarea name="major" id="major">{{ user_profile.major|join:', ' }}</textarea>
-
-            <label for="bio">Bio:</label>
-            <textarea name="bio" id="bio" rows="5">{{ user_profile.bio }}</textarea>
-
-            <label for="preferences">Preferences:</label>
-            <textarea name="preferences" id="preferences" rows="4">{{ user_profile.preferences }}</textarea>
+            <!-- Dynamic Form Fields -->
+            {% for field, value in default_info.items %}
+                <div class="form-field">
+                    <label for="{{ field }}">{{ field|title }}:</label>
+                    {% if value is None or value == '' %}
+                        <!-- Render a textarea for empty strings or None -->
+                        <textarea id="{{ field }}" name="{{ field }}" rows="3">{{ user_profile|get:field|default:"" }}</textarea>
+                    {% elif value|is_list and field == 'ethnicity' %}
+                        <!-- Render a tags input for ethnicity with predefined suggestions -->
+                        <input id="{{ field }}" name="{{ field }}" value="{{ user_profile|get:field|join:',' }}" />
+                    {% elif value|is_list and field == 'major' %}
+                         <input id="{{ field }}" name="{{ field }}" value="{{ user_profile|get:field|join:',' }}" />
+                    {% elif value|is_list %}
+                        <!-- Render a dropdown for other list values -->
+                        <select id="{{ field }}" name="{{ field }}">
+                            {% for option in value %}
+                                <option value="{{ option }}" {% if user_profile|get:field == option %}selected{% endif %}>{{ option }}</option>
+                            {% endfor %}
+                        </select>
+                    {% else %}
+                        <!-- Render a text input for other types -->
+                        <input type="text" id="{{ field }}" name="{{ field }}" value="{{ user_profile|get:field|default:value }}">
+                    {% endif %}
+                </div>
+            {% endfor %}
 
             <button type="submit" class="save" name="edit">Save Changes</button>
         </form>
@@ -72,6 +74,41 @@
         <a href="{% url 'home' %}">⟵ Back to Home</a>
     </div>
 </div>
+
+<!-- Include Tagify library -->
+<script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify"></script>
+<script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.polyfills.min.js"></script>
+
+<script>
+    // Initialize Tagify for ethnicity (with predefined suggestions)
+    const ethnicityInput = document.querySelector('input[name="ethnicity"]');
+    const ethnicityTagify = new Tagify(ethnicityInput, {
+        enforceWhitelist: true, // Only allow whitelisted values
+        whitelist: {{ default_info.ethnicity|safe }}, // Predefined ethnicity options
+        dropdown: {
+            enabled: 1, // Show suggestions dropdown
+        },
+    });
+
+    // Initialize Tagify for major (free-form tags)
+    const majorInput = document.querySelector('input[name="major"]');
+    const majorTagify = new Tagify(majorInput, {
+        enforceWhitelist: false, // Allow any input
+        dropdown: {
+            enabled: 0, // No suggestions dropdown
+        },
+    });
+
+    // Ensure the form submits the tags as a comma-separated string
+    document.getElementById('profile-form').addEventListener('submit', function (e) {
+        const ethnicityTags = ethnicityTagify.value.map(tag => tag.value).join(',');
+        const majorTags = majorTagify.value.map(tag => tag.value).join(',');
+
+        // Update hidden inputs or modify form data before submission
+        ethnicityInput.value = ethnicityTags;
+        majorInput.value = majorTags;
+    });
+</script>
 </body>
 {% endblock content %}
 </html>
