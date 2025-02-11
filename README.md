@@ -175,7 +175,6 @@ If you’d like to run the K-Means yourself...
 Make sure your ```.env``` includes your Pinecone key:
 
 ```bash
-Copy code
 PINECONE_KEY=your_pinecone_api_key
 and any other environment variables required by the scripts.
 ```
@@ -184,7 +183,6 @@ and any other environment variables required by the scripts.
 Inside the ```src/ml/clustering/``` folder, there’s a script called ```cluster_users.py``` which performs a simple K-Means clustering on up to 1,000 user embeddings from Pinecone. For instance:
 
 ```bash
-Copy code
 python src/ml/clustering/cluster_users.py
 ```
 This will:
@@ -201,7 +199,6 @@ You can modify the number of clusters or random state by editing ```cluster_user
 The ```evaluation.py``` script helps you **find the optimal k (num of clusters)**:
 
 ```bash
-Copy code
 python src/ml/clustering/evaluation.py
 ```
 
