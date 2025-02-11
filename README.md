@@ -147,21 +147,24 @@ Here is a sample of the first rows that were generated
 
 After clustering that pool of users, we can see some logical matching that occured in each cluster.
 
-### Let's see some cluster examples:
+## Let's see some cluster examples:
 
-- cluster 3
+## cluster 3
 
 <img width="1243" alt="image" src="https://github.com/user-attachments/assets/470aec57-ef42-4edb-b8b0-44638761c4c0" />
+
 *I think the users share a common interest in politics (might be just me though...*
 
-- cluster 6
+## cluster 6
   
 <img width="1243" alt="image" src="https://github.com/user-attachments/assets/38d82518-9d24-4a88-9ecf-6d971114283f" />
+
 *These profiles all seem to be curious and free-spirited thinkers, with a shared passion for exploring diverse ideas*
 
-- lastly, my favourite, cluster 8
+## lastly, my favourite, cluster 8
 
 <img width="1243" alt="image" src="https://github.com/user-attachments/assets/de5fca1b-c861-4122-8a45-f1612a0450db" />
+
 *I am predicting some study dates @ McConnel or Trottier Eng buildings*
 
 
