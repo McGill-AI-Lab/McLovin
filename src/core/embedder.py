@@ -5,7 +5,10 @@ import os
 import time
 from dotenv import load_dotenv
 #from src.core.embedder import Embedder
-from src.core.profile import UserProfile, Faculty, Grade, Gender, Ethnicity, SexualOrientationProbabilities
+import sys 
+sys.path.append('../')
+
+from core.profile import UserProfile, Faculty, Grade, Gender, Ethnicity, SexualOrientationProbabilities
 
 
 load_dotenv(dotenv_path='.env')

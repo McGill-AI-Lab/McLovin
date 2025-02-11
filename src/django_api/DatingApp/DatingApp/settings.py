@@ -28,7 +28,8 @@ DEBUG = True
 ALLOWED_HOSTS = [
     "localhost", 
     "127.0.0.1", 
-    "mcgilldating.sytes.net"
+    "mcgilldating.sytes.net",
+    '109.222.56.181',
 ]
 
 
