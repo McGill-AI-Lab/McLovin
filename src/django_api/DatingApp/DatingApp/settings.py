@@ -26,8 +26,8 @@ SECRET_KEY = 'django-insecure-_*r=&h%kbfcu$nq5*2k9vd*)^em$477(x$4&yk0l+18$rj5ag9
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1",
+    "localhost", 
+    "127.0.0.1", 
     "mcgilldating.sytes.net"
 ]
 
