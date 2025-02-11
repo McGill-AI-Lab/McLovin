@@ -208,7 +208,7 @@ def user_dashboard(request, user_id):
                 # Create a UserProfile instance to perform the embedding
                 User().embed(user_collection)
 
-                print(f"User {data["user_id"]} has been successfully embedded!")
+                print(f"User {data['user_id']} has been successfully embedded!")
 
             return redirect('home')
 
