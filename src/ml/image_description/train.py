@@ -6,14 +6,16 @@ import torch.optim as optim
 
 from src.ml.image_description.config import DEVICE, LR, MAX_EPOCH, BATCH_SIZE, MODEL_PATH
 from src.ml.image_description.data.celeba_dataset import create_celeba_dataloader
-from src.ml.image_description.models.conv_net import ConvNet
+#from src.ml.image_description.models.conv_net import ConvNet
 
 def train_celeba():
 
     train_loader = create_celeba_dataloader(split='train', batch_size=BATCH_SIZE, shuffle=True)
     val_loader = create_celeba_dataloader(split='valid', batch_size=BATCH_SIZE)  # Add validation
 
-    model = ConvNet(num_classes=26).to(DEVICE)
+    model = torch.hub.load('pytorch/vision:v0.10.0', 'resnet50', pretrained=True).to(DEVICE)
+    model.fc = nn.Linear(model.fc.in_features, 26)
+    
     criterion = nn.BCEWithLogitsLoss()
     optimizer = optim.AdamW(model.parameters(), lr=LR, weight_decay=0.01)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', patience=2)

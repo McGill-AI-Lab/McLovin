@@ -18,13 +18,14 @@ VALUE_OF_ATTRIBUTES = [
 # Simple transform (same as the training transform)
 from torchvision import transforms
 transform = transforms.Compose([
-    transforms.Resize((128, 128)),
-    transforms.ToTensor(),
-    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-])
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
+    ])
 
 def load_model(path=MODEL_PATH):
-    model = ConvNet(num_classes=26).to(DEVICE)
+    model = torch.hub.load('pytorch/vision:v0.10.0', 'resnet50', pretrained=True).to(DEVICE)
+    model.fc = torch.nn.Linear(model.fc.in_features, 26)
     model.load_state_dict(torch.load(path, map_location=DEVICE))
     model.eval()
     return model

@@ -30,9 +30,9 @@ def center_images(image):
 def get_celeba_transforms():
     """Return the Compose of transforms used for CelebA images."""
     return transforms.Compose([
-        transforms.Resize((128, 128)),
+        transforms.Resize((224, 224)),
         transforms.ToTensor(),
-        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+        transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
     ])
 
 def create_celeba_dataloader(split: str, root: str = './src/ml/image_description/data', download: bool = True,

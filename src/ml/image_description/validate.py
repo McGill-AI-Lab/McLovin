@@ -11,7 +11,8 @@ def validate_celeba():
     test_loader = create_celeba_dataloader(split='test', batch_size=BATCH_SIZE, shuffle=False)
 
     # Load model
-    model = ConvNet(num_classes=26).to(DEVICE)
+    model = torch.hub.load('pytorch/vision:v0.10.0', 'resnet50', pretrained=True).to(DEVICE)
+    model.fc = nn.Linear(model.fc.in_features, 26).to(DEVICE)
     model.load_state_dict(torch.load(MODEL_PATH, map_location=DEVICE))
     model.eval()
 
