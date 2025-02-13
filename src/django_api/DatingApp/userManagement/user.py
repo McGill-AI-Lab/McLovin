@@ -10,7 +10,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 sys.path.append('../../') # assuming working dir is DatingApp (with manage.py), this adds the core directory to PATH
 
-from core.profile import UserProfile,Grade, Faculty,Ethnicity
+from core.profile import UserProfile,Grade,Faculty,Ethnicity,Gender,SexualOrientationProbabilities
 from ml.clustering.cluster_users import cluster_users
 from core.embedder import Embedder
 
@@ -31,7 +31,8 @@ from bson import ObjectId
 enum_fields = {
     "grade": Grade,
     "ethnicity": Ethnicity,
-    "faculty": Faculty
+    "faculty": Faculty,
+    "gender":Gender,
 }
 
 def serialize_enums(data):
@@ -126,12 +127,6 @@ class User(UserProfile):
 
         if not user_data:
             return None
-
-        enum_fields = {
-            "grade": Grade,
-            "ethnicity": Ethnicity,
-            "faculty": Faculty
-        }
 
         user_data = deserialize_enums(user_data, enum_fields)
 

@@ -16,7 +16,7 @@ from django.contrib import messages
 from bson import ObjectId
 import sys
 sys.path.append('../../')
-from core.profile import UserProfile, Grade,Ethnicity,Faculty
+from core.profile import UserProfile, Grade,Ethnicity,Faculty,Gender,SexualOrientationProbabilities
 
 config_path = find_dotenv("config.env")
 config = dotenv_values(dotenv_path=config_path) # returns a dictionnary of dotenv values
@@ -25,6 +25,13 @@ mongo_client = MongoClient(config["MONGO_URI"])
 mongo_db = mongo_client[config["MONGO_DB_NAME"]]
 users_collection = mongo_db["users"]
 
+
+enum_fields = {
+    "grade": Grade,
+    "ethnicity": Ethnicity,
+    "faculty": Faculty,
+    "gender":Gender,
+}
 
 @api_view(['GET', 'POST'])
 @csrf_exempt
@@ -97,6 +104,7 @@ def signup_user(request):
                 'faculty': "Faculty",
                 'major': [], # default list
                 'bio': "This is my bio !",
+                "gender":[],
                 'preferences': "preference",
             }
             result = mongo_db.users.insert_one(user)
@@ -117,15 +125,22 @@ def restricted_view(request):
 
 def get_paremeters():
     dic = {}
-    for enum in Grade, Faculty, Ethnicity:
+    for enum in enum_fields.values():
         dic[str(enum.__name__).lower()] = [e.name for e in enum]
     initials = User().to_dict_with_defaults()
     for key,value in initials.items():
+        if key is "gender":
+            pass
         if key in dic:
             initials[key] = dic[key]
 
+
     del initials['user_id']
     del initials['cluster_id']
+    del initials['fake']
+    del initials['matches']
+
+    initials['genders_of_interest'] = initials["gender"]
 
     return initials
 
@@ -152,14 +167,6 @@ def user_dashboard(request, user_id):
             }
 
             print("UPDATED DATA RAW ", updated_data)
-
-
-            # Create a dictionary to map enum names to their respective enum classes
-            enum_mapping = {
-                'grade': Grade,
-                'faculty': Faculty,
-                'ethnicity': Ethnicity,
-            }
 
             # Function to map a list of string values to their corresponding enum values
             def map_to_enum(enum_class, values):
@@ -227,4 +234,5 @@ def user_dashboard(request, user_id):
         'user_profile': merged_profile,
         'default_info': get_paremeters(),
     }
+    print(merged_profile,get_paremeters())
     return render(request, 'dashboard.html', context)

@@ -39,11 +39,9 @@
                     {% if value is None or value == '' %}
                         <!-- Render a textarea for empty strings or None -->
                         <textarea id="{{ field }}" name="{{ field }}" rows="3">{{ user_profile|get:field|default:"" }}</textarea>
-                    {% elif value|is_list and field == 'ethnicity' %}
+                    {% elif value|is_list and field|is_dropdown %}
                         <!-- Render a tags input for ethnicity with predefined suggestions -->
                         <input id="{{ field }}" name="{{ field }}" value="{{ user_profile|get:field|join:',' }}" />
-                    {% elif value|is_list and field == 'major' %}
-                         <input id="{{ field }}" name="{{ field }}" value="{{ user_profile|get:field|join:',' }}" />
                     {% elif value|is_list %}
                         <!-- Render a dropdown for other list values -->
                         <select id="{{ field }}" name="{{ field }}">
@@ -80,35 +78,39 @@
 <script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.polyfills.min.js"></script>
 
 <script>
-    // Initialize Tagify for ethnicity (with predefined suggestions)
-    const ethnicityInput = document.querySelector('input[name="ethnicity"]');
-    const ethnicityTagify = new Tagify(ethnicityInput, {
-        enforceWhitelist: true, // Only allow whitelisted values
-        whitelist: {{ default_info.ethnicity|safe }}, // Predefined ethnicity options
-        dropdown: {
-            enabled: 1, // Show suggestions dropdown
-        },
-    });
+    let dropdownField = ["ethnicity", "genders_of_interest", "major"];
 
-    // Initialize Tagify for major (free-form tags)
-    const majorInput = document.querySelector('input[name="major"]');
-    const majorTagify = new Tagify(majorInput, {
-        enforceWhitelist: false, // Allow any input
-        dropdown: {
-            enabled: 0, // No suggestions dropdown
-        },
-    });
+    // Initialize Tagify for ethnicity (with predefined suggestions)
+    function addTagField(field, isFree) {
+        const default_info = {{ default_info|safe }};
+        console.log("trying on"+default_info);
+        const input = document.querySelector(`input[name="${field}"]`);
+        console.log("trying on"+field);
+        const fieldTagify = new Tagify(input, {
+            enforceWhitelist: true, // Only allow whitelisted value
+            whitelist: default_info[field], // Fetch from data attribute
+            dropdown: {
+                enabled: isFree, // Show suggestions dropdown
+            },
+        });
+        return fieldTagify;
+    }
+
+    let dropdownElements = [];
+    for (let i = 0; i < dropdownField.length; i++) {
+        dropdownElements.push(addTagField(dropdownField[i], 0));
+    }
 
     // Ensure the form submits the tags as a comma-separated string
     document.getElementById('profile-form').addEventListener('submit', function (e) {
-        const ethnicityTags = ethnicityTagify.value.map(tag => tag.value).join(',');
-        const majorTags = majorTagify.value.map(tag => tag.value).join(',');
-
-        // Update hidden inputs or modify form data before submission
-        ethnicityInput.value = ethnicityTags;
-        majorInput.value = majorTags;
+        for (let i = 0; i < dropdownElements.length; i++) {
+            const val = dropdownElements[i].value.map(tag => tag.value).join(',');
+            let el = document.querySelector(`input[name="${dropdownField[i]}"]`);
+            el.value = val;
+        }
     });
 </script>
+
 </body>
 {% endblock content %}
 </html>

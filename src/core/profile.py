@@ -102,7 +102,7 @@ class UserProfile:
     preferences: str
     cluster_id: int
     fake: bool
-    matches: List['UserProfile']
+    matches: list['UserProfile']
 
     def __init__(self, user_id, name, age, gender, genders_of_interest, grade, ethnicity, faculty, major, bio, preferences='',fake=True):
         # all these fields must be instantiated
