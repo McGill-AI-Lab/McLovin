@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { Navbar } from "./Navbar";
 
 interface LayoutProps {
@@ -7,6 +7,9 @@ interface LayoutProps {
 }
 
 export const Layout = ({ children }: LayoutProps) => {
+  const location = useLocation();
+  const isHomePage = location.pathname === "/";
+
   return (
     <Box
       sx={{
@@ -14,8 +17,8 @@ export const Layout = ({ children }: LayoutProps) => {
         background: "linear-gradient(135deg, #ff9a9e, #fad0c4)",
       }}
     >
-      <Navbar />
-      <Box component="main" sx={{ p: 3 }}>
+      {!isHomePage && <Navbar />}
+      <Box component="main" sx={{ p: isHomePage ? 0 : 3 }}>
         {children || <Outlet />}
       </Box>
     </Box>
