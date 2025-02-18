@@ -2,6 +2,9 @@
 
 A ML-powered dating application for McGill students. It uses advanced algorithms (k-means clustering, vector embeddings) to connect students based on shared academic interests, faculty, and personal preferences.
 
+![image](https://github.com/user-attachments/assets/84f4bee9-1f43-48bc-b4f4-e6d5d1e426c6)
+
+
 # Project Overview
 ## 🌟 Features
 - **Smart Matching** via ML algorithms
