@@ -1,4 +1,4 @@
-import { Box, Typography, Container } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -42,16 +42,20 @@ export const Home = () => {
 
   const textButtonStyle = {
     color: "white",
-    fontSize: "1.2rem",
+    fontSize: "1.3rem",
     cursor: "pointer",
     position: "relative",
     display: "inline-block",
     padding: "10px 20px",
+    fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
+    letterSpacing: "0.02em",
+    fontWeight: 700, // Changed to bold
+    textTransform: "none",
     "&::after": {
       content: '""',
       position: "absolute",
       width: "0",
-      height: "2px",
+      height: "2px", // Made slightly thicker
       bottom: 0,
       left: "50%",
       backgroundColor: "white",
@@ -97,14 +101,24 @@ export const Home = () => {
             <Typography
               variant="h1"
               sx={{
-                fontSize: { xs: "2.5rem", md: "4rem" },
+                fontSize: { xs: "2.8rem", md: "5.5rem" },
                 color: "white",
-                fontWeight: 700,
+                fontWeight: 800, // Extra bold for main title
                 textShadow: "2px 2px 4px rgba(0,0,0,0.1)",
                 mb: 4,
+                fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
+                letterSpacing: "-0.02em", // Slightly tighter for bold text
+                lineHeight: 1.1,
+                "& span": {
+                  display: "block",
+                  fontSize: "100%",
+                  fontWeight: 800,
+                  marginTop: "0.2em",
+                  letterSpacing: "-0.02em",
+                },
               }}
             >
-              Find Your McGill Match
+              <span> McLovin</span>
             </Typography>
           </motion.div>
 
@@ -118,15 +132,20 @@ export const Home = () => {
             <Box
               sx={{
                 color: "white",
-                fontSize: "3rem",
+                fontSize: "4rem",
+                fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
+                fontWeight: 700,
                 "&:hover": {
                   transform: "scale(1.1)",
                   transition: "transform 0.2s ease-in-out",
                 },
+                "&::after": {
+                  content: '"↓"',
+                  display: "block",
+                  textShadow: "2px 2px 4px rgba(0,0,0,0.1)",
+                },
               }}
-            >
-              ↓
-            </Box>
+            />
           </motion.div>
         </Box>
       </Box>
@@ -151,11 +170,15 @@ export const Home = () => {
           <Typography
             variant="h2"
             sx={{
-              fontSize: { xs: "1.8rem", md: "2.5rem" },
+              fontSize: { xs: "2rem", md: "3.2rem" },
               color: "white",
-              fontWeight: 600,
+              fontWeight: 700, // Bold for secondary heading
               textAlign: "center",
               mb: 6,
+              fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
+              letterSpacing: "-0.01em",
+              textShadow: "2px 2px 4px rgba(0,0,0,0.1)",
+              lineHeight: 1.2,
             }}
           >
             Welcome to McGill's AI Matchmaker!
